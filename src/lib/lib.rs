@@ -17,10 +17,11 @@
 // - Users can open threads on an event to ask questions
 //      - Moderated by server owners + event owners
 
-use chrono::{Datelike, Month as CMonth, NaiveDate, NaiveDateTime, NaiveTime, Utc, Weekday};
-use num_traits::cast::FromPrimitive;
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 
 use thiserror::Error;
+
+use std::collections::BTreeMap;
 
 /// Basic Errors that can occur for events
 #[derive(Error, Debug)]
@@ -35,16 +36,46 @@ pub enum EventError {
 }
 
 /// Struct to represent a given event on the calendar
+#[derive(PartialOrd, PartialEq, Eq)]
 pub struct Event {
     name: String,
     start: NaiveDateTime,
     end: NaiveDateTime,
 }
 
+impl Ord for Event {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        use std::cmp::Ordering::*;
+        match (
+            self.start.cmp(&other.start),
+            self.end.cmp(&other.end),
+            self.name.cmp(&other.name),
+        ) {
+            (Greater, _, _) => Greater,
+            (Less, _, _) => Less,
+            (Equal, Greater, _) => Greater,
+            (Equal, Less, _) => Less,
+            (Equal, Equal, Greater) => Greater,
+            (Equal, Equal, Less) => Less,
+            (Equal, Equal, Equal) => Equal,
+        }
+    }
+}
+
 impl Event {
     /// given a start and end time determine whether they would be valid
     fn start_end_times_valid(st: &NaiveDateTime, end: &NaiveDateTime) -> bool {
         end.signed_duration_since(*st).num_seconds().is_positive()
+    }
+
+    /// return the NaiveDate component of the start field
+    fn start_nd(&self) -> NaiveDate {
+        self.start.date()
+    }
+
+    /// return the NaiveDate component of the end field
+    fn end_nd(&self) -> NaiveDate {
+        self.end.date()
     }
 
     /// Create an Event with a name and date, defaults to an
@@ -58,28 +89,27 @@ impl Event {
     }
 
     /// Set/Change an event's start time
-    pub fn with_start(&mut self, start: NaiveDateTime) -> Result<&NaiveDateTime, EventError> {
+    #[must_use]
+    pub fn with_start(self, start: NaiveDateTime) -> Result<Self, EventError> {
         // check how many seconds from the start time the end time is, if the value
         // is negative that means the start time is AFTER the end time which
         // results in an InvalidStartTime error, on success returns the new start time
         if Event::start_end_times_valid(&start, &self.end) {
-            // previous start time is overwritten
-            self.start = start;
-            Ok(&self.start)
+            // lol literally the first time ive used this syntax
+            Ok(Event { start, ..self })
         } else {
             // if the new start time is invalid then return an error
             Err(EventError::InvalidStartTime)
         }
     }
 
-    pub fn with_end(&mut self, end: NaiveDateTime) -> Result<&NaiveDateTime, EventError> {
+    pub fn with_end(self, end: NaiveDateTime) -> Result<Self, EventError> {
         // check how many seconds from the end time the start time is, if the value
         // is negative that means the start time is AFTER the end time which
         // results in an InvalidEndTime error, on success returns new end time
         if Event::start_end_times_valid(&self.start, &end) {
             // previous end time is overwritten
-            self.end = end;
-            Ok(&self.end)
+            Ok(Event { end, ..self })
         } else {
             Err(EventError::InvalidEndTime)
         }
@@ -96,52 +126,9 @@ impl Event {
 //       Maybe a Vector or Hashmap of Events makes sense? Suppose a request
 //       was made to get all of the events given some time range,
 
-/// Struct containing all the events for the day
-pub struct Day<'month> {
-    events: Option<Vec<&'month Event>>,
-    n_date: NaiveDate,
-    weekday: Weekday,
-}
-
-/// Struct representing a Month
-pub struct Month {
-    // days: Vec<Day<'month>><'month>,
-    events: Vec<Event>,
-    // Chrono Month enum
-    month: CMonth,
-    // the year the month is in
-    year: i32,
-}
-
-impl Month {
-    fn from_ym(year: i32, month: u32) -> Option<Self> {
-        // the first day of the mont
-        let date = NaiveDate::from_ymd_opt(year, month, 1)?;
-
-        // iterator over every day of the month and create a Vector of Days
-        // let days = date
-        //     .iter_days()
-        //     .take_while(|date| date.month() == month)
-        //     .map(|d| Day {
-        //         events: None,
-        //         n_date: d,
-        //         weekday: d.weekday(),
-        //     })
-        //     .collect::<Vec<Day>>();
-
-        Some(Self {
-            // days,
-            events: Vec::new(),
-            month: CMonth::from_u32(month)?,
-            year,
-        })
-    }
-}
-
-/// Represents a calendar of events with the previous,
-/// current, and next months events loaded
+/// Represents a calendar of events
 pub struct EventCalendar {
-    curr_month: Month,
+    curr_month: BTreeMap<String, Event>,
 }
 
 // NOTE: this will need to be changed to scan for files
@@ -149,21 +136,16 @@ pub struct EventCalendar {
 impl Default for EventCalendar {
     fn default() -> Self {
         // get current time in standard timezone
-        let datetime = Utc::now().naive_utc();
-
-        let c_month = chrono::Month::from_u32(datetime.month()).unwrap();
-
-        // the month numbers, previous, next, and current month
-        let c_month = datetime.month();
-
-        let curr_month = Month::from_ym(datetime.year(), c_month).unwrap();
-
-        Self { curr_month }
+        Self {
+            curr_month: BTreeMap::new(),
+        }
     }
 }
 
 #[cfg(test)]
 mod test {
+    use chrono::{Datelike, Timelike};
+
     use super::*;
 
     // helper functions for test
@@ -194,21 +176,6 @@ mod test {
     // ##################################
 
     #[test]
-    fn from_ym_test() {
-        let dec_22 = Month::from_ym(2022, 12).unwrap();
-
-        assert_eq!(dec_22.month, CMonth::December);
-        // assert_eq!(dec_22.days[0].weekday, Weekday::Thu);
-        // assert_eq!(dec_22.days.len(), 31);
-
-        let feb_20 = Month::from_ym(2020, 2).unwrap();
-        assert_eq!(feb_20.month, CMonth::February);
-        // assert_eq!(feb_20.days[0].weekday, Weekday::Sat);
-        // assert_eq!(feb_20.days[28].weekday, Weekday::Sat);
-        // assert_eq!(feb_20.days.len(), 29);
-    }
-
-    #[test]
     fn test_new_event() {
         let naive_date = first_day_2023_nd();
 
@@ -237,7 +204,7 @@ mod test {
         // new start time
         let new_start_time = NaiveTime::from_hms_opt(10, 30, 0).unwrap();
 
-        event
+        event = event
             .with_start(NaiveDateTime::new(naive_date, new_start_time))
             .unwrap();
         assert_eq!(event.start, NaiveDateTime::new(naive_date, new_start_time))
@@ -253,7 +220,7 @@ mod test {
         // new start time
         let new_end_time = NaiveTime::from_hms_opt(22, 30, 0).unwrap();
 
-        event
+        event = event
             .with_end(NaiveDateTime::new(naive_date, new_end_time))
             .unwrap();
 
@@ -269,7 +236,7 @@ mod test {
 
         let mut event = Event::new("Birthday".into(), &naive_date);
 
-        event
+        event = event
             .with_start(NaiveDateTime::new(naive_date, start_time))
             .unwrap();
 
@@ -304,7 +271,7 @@ mod test {
         let new_start_time = NaiveTime::from_hms_opt(10, 30, 0).unwrap();
 
         // update start time
-        event
+        event = event
             .with_start(NaiveDateTime::new(naive_date, new_start_time))
             .unwrap();
 
@@ -314,7 +281,7 @@ mod test {
         let new_end_time = NaiveTime::from_hms_opt(22, 30, 0).unwrap();
 
         // update end time
-        event
+        event = event
             .with_end(NaiveDateTime::new(naive_date, new_end_time))
             .unwrap();
 
@@ -325,7 +292,46 @@ mod test {
         assert_eq!(true, status.is_err());
 
         // try to set invalid end time
+        let mut event = Event::new(String::from("Birthday Party"), &naive_date);
         let status = event.with_end(NaiveDateTime::new(naive_date, first_time));
         assert_eq!(true, status.is_err());
+    }
+
+    #[test]
+    fn test_event_ordering_lt_start_cmp() {
+        use std::cmp::Ordering;
+        let ndt = first_day_2023_ndt();
+        let d1 = Event::new("A".into(), &ndt.date());
+
+        // 01/01/2023-00:00:00 < 01/01/2023-00:00:01
+        let mut d2 = Event::new("A".into(), &ndt.date());
+        d2 = d2.with_start(d1.start.with_second(1).unwrap()).unwrap();
+        assert_eq!(d1.cmp(&d2), Ordering::Less);
+
+        // 01/01/2023-00:00:00 < 01/01/2023-00:01:00
+        let mut d3 = Event::new("A".into(), &ndt.date());
+        d3 = d3.with_start(d1.start.with_minute(1).unwrap()).unwrap();
+        assert_eq!(d1.cmp(&d3), Ordering::Less);
+
+        // 01/01/2023-00:00:00 < 01/01/2023-01:00:00
+        let mut d4 = Event::new("A".into(), &ndt.date());
+        d4 = d4.with_start(d1.start.with_hour(1).unwrap()).unwrap();
+        assert_eq!(d1.cmp(&d4), Ordering::Less);
+
+        // 01/01/2023-00:00:00 < 01/01/2024-00:00:00
+        let mut d5 = Event::new("A".into(), &ndt.date().with_year(2024).unwrap());
+        assert_eq!(d1.cmp(&d5), Ordering::Less);
+
+        // 01/01/2023-00:00:00 < 01/02/2023-00:00:00
+        let mut d6 = Event::new("A".into(), &ndt.date());
+        d6 = d6.with_end(d1.start.with_day(3).unwrap()).unwrap();
+        d6 = d6.with_start(d1.start.with_day(2).unwrap()).unwrap();
+        assert_eq!(d1.cmp(&d6), Ordering::Less);
+
+        // 01/01/2023-00:00:00 < 02/01/2023-00:00:00
+        let mut d7 = Event::new("A".into(), &ndt.date());
+        d7 = d7.with_end(d1.start.with_month(3).unwrap()).unwrap();
+        d7 = d7.with_start(d1.start.with_month(2).unwrap()).unwrap();
+        assert_eq!(d1.cmp(&d7), Ordering::Less);
     }
 }
