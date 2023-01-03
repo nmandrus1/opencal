@@ -1,5 +1,6 @@
 use super::EventError;
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+use uuid::Uuid;
 
 // NOTE: Keep fields in order based on how comparisons should go,
 // see Ord/PartialOrd Trait derive documentation
@@ -9,6 +10,7 @@ pub struct Event {
     start: NaiveDateTime,
     end: NaiveDateTime,
     name: String,
+    id: Uuid,
 }
 
 impl Event {
@@ -32,6 +34,11 @@ impl Event {
         &self.name
     }
 
+    /// returns the id of the event
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
     /// Create an Event with a name and date, defaults to an
     /// all day event starting at 00:00:00 and ending at 23:59:59
     pub fn new(name: String, date: &NaiveDate) -> Self {
@@ -39,6 +46,7 @@ impl Event {
             name,
             start: NaiveDateTime::new(*date, NaiveTime::from_hms_opt(0, 0, 0).unwrap()),
             end: NaiveDateTime::new(*date, NaiveTime::from_hms_opt(23, 59, 59).unwrap()),
+            id: Uuid::new_v4(),
         }
     }
 

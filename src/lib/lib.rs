@@ -247,9 +247,18 @@ mod test {
         cal.add_event(e5);
 
         let mut iter = cal.events_in_range(range_start, range_end);
-        assert_eq!(iter.next(), Some(&Event::new("A".into(), &nd2)));
-        assert_eq!(iter.next(), Some(&Event::new("A".into(), &nd3)));
-        assert_eq!(iter.next(), Some(&Event::new("A".into(), &nd4)));
+        assert_eq!(
+            iter.next().map(|(_, e)| e),
+            Some(&Event::new("A".into(), &nd2))
+        );
+        assert_eq!(
+            iter.next().map(|(_, e)| e),
+            Some(&Event::new("A".into(), &nd3))
+        );
+        assert_eq!(
+            iter.next().map(|(_, e)| e),
+            Some(&Event::new("A".into(), &nd4))
+        );
         assert_eq!(iter.next(), None);
     }
 }
