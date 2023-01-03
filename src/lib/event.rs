@@ -1,10 +1,11 @@
 use super::EventError;
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
+use serde::Serialize;
 
 // NOTE: Keep fields in order based on how comparisons should go,
 // see Ord/PartialOrd Trait derive documentation
 /// Struct to represent a given event on the calendar
-#[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
+#[derive(PartialOrd, Ord, PartialEq, Eq, Debug, Serialize)]
 pub struct Event {
     start: NaiveDateTime,
     end: NaiveDateTime,
@@ -71,5 +72,9 @@ impl Event {
     /// Change the name of an event
     pub fn set_name(&mut self, new_name: String) {
         self.name = new_name;
+    }
+
+    pub fn serialize(self) -> String {
+        serde_json::to_string(&self).unwrap()
     }
 }
