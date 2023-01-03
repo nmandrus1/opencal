@@ -52,13 +52,18 @@ impl Event {
     }
 
     /// return the NaiveDate component of the start field
-    fn start_nd(&self) -> NaiveDate {
+    pub fn start(&self) -> NaiveDate {
         self.start.date()
     }
 
     /// return the NaiveDate component of the end field
-    fn end_nd(&self) -> NaiveDate {
+    pub fn end(&self) -> NaiveDate {
         self.end.date()
+    }
+
+    /// returns the name of the event
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     /// Create an Event with a name and date, defaults to an
@@ -128,6 +133,10 @@ impl EventCalendar {
         self.0.iter().filter(move |evt| {
             (evt.start >= start && evt.start <= end) || (evt.end >= start && evt.end <= end)
         })
+    }
+
+    pub fn first_event(&self) -> Option<&Event> {
+        self.0.first()
     }
 }
 
