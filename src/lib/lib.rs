@@ -21,7 +21,7 @@ use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 
 use thiserror::Error;
 
-use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 
 /// Basic Errors that can occur for events
 #[derive(Error, Debug)]
@@ -35,31 +35,14 @@ pub enum EventError {
     InvalidEndTime,
 }
 
+// NOTE: Keep fields in order based on how comparisons should go,
+// see Ord/PartialOrd Trait derive documentation
 /// Struct to represent a given event on the calendar
-#[derive(PartialOrd, PartialEq, Eq)]
+#[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
 pub struct Event {
-    name: String,
     start: NaiveDateTime,
     end: NaiveDateTime,
-}
-
-impl Ord for Event {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        use std::cmp::Ordering::*;
-        match (
-            self.start.cmp(&other.start),
-            self.end.cmp(&other.end),
-            self.name.cmp(&other.name),
-        ) {
-            (Greater, _, _) => Greater,
-            (Less, _, _) => Less,
-            (Equal, Greater, _) => Greater,
-            (Equal, Less, _) => Less,
-            (Equal, Equal, Greater) => Greater,
-            (Equal, Equal, Less) => Less,
-            (Equal, Equal, Equal) => Equal,
-        }
-    }
+    name: String,
 }
 
 impl Event {
@@ -127,8 +110,25 @@ impl Event {
 //       was made to get all of the events given some time range,
 
 /// Represents a calendar of events
-pub struct EventCalendar {
-    curr_month: BTreeMap<String, Event>,
+pub struct EventCalendar(BTreeSet<Event>);
+
+impl EventCalendar {
+    /// inserts event into calednar, returning true if the event
+    /// is new to the calendar and false if the event already exits
+    pub fn add_event(&mut self, event: Event) -> bool {
+        self.0.insert(event)
+    }
+
+    /// return an iterator of all events between start and end
+    pub fn events_in_range<'cal>(
+        &'cal self,
+        start: NaiveDateTime,
+        end: NaiveDateTime,
+    ) -> impl Iterator<Item = &Event> {
+        self.0.iter().filter(move |evt| {
+            (evt.start >= start && evt.start <= end) || (evt.end >= start && evt.end <= end)
+        })
+    }
 }
 
 // NOTE: this will need to be changed to scan for files
@@ -136,9 +136,7 @@ pub struct EventCalendar {
 impl Default for EventCalendar {
     fn default() -> Self {
         // get current time in standard timezone
-        Self {
-            curr_month: BTreeMap::new(),
-        }
+        Self(BTreeSet::new())
     }
 }
 
@@ -333,5 +331,36 @@ mod test {
         d7 = d7.with_end(d1.start.with_month(3).unwrap()).unwrap();
         d7 = d7.with_start(d1.start.with_month(2).unwrap()).unwrap();
         assert_eq!(d1.cmp(&d7), Ordering::Less);
+    }
+
+    #[test]
+    fn test_event_range() {
+        let nd1 = first_day_2023_nd();
+        let nd2 = nd1.with_day(2).unwrap();
+        let nd3 = nd1.with_day(3).unwrap();
+        let nd4 = nd1.with_day(4).unwrap();
+        let nd5 = nd1.with_day(5).unwrap();
+
+        let e1 = Event::new("A".into(), &nd1);
+        let e2 = Event::new("A".into(), &nd2);
+        let e3 = Event::new("A".into(), &nd3);
+        let e4 = Event::new("A".into(), &nd4);
+        let e5 = Event::new("A".into(), &nd5);
+
+        let range_start = NaiveDateTime::new(nd2, NaiveTime::from_hms_opt(11, 0, 0).unwrap());
+        let range_end = NaiveDateTime::new(nd4, last_time_nt());
+
+        let mut cal = EventCalendar::default();
+        cal.add_event(e1);
+        cal.add_event(e2);
+        cal.add_event(e3);
+        cal.add_event(e4);
+        cal.add_event(e5);
+
+        let mut iter = cal.events_in_range(range_start, range_end);
+        assert_eq!(iter.next(), Some(&Event::new("A".into(), &nd2)));
+        assert_eq!(iter.next(), Some(&Event::new("A".into(), &nd3)));
+        assert_eq!(iter.next(), Some(&Event::new("A".into(), &nd4)));
+        assert_eq!(iter.next(), None);
     }
 }
