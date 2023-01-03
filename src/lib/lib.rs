@@ -1,22 +1,3 @@
-// General Notes and Ideas
-//
-// - Fundemental unit is a Month
-// - A month contains a vector of Days
-//      - Serializable to be stored on disk
-//      - Query specific days/weeks
-// - A Day contains a list of events
-//
-// - Server will have a 'Calendar Owner' with full permissions
-// - Server will have basic commands to add moderators and Event types
-
-// Because the calendar is crowd sourced and public, events will
-// have event owners such that only the owner or a group of owners will
-// have permissions to edit the event
-//
-// FUTURE:
-// - Users can open threads on an event to ask questions
-//      - Moderated by server owners + event owners
-
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 
 use thiserror::Error;
@@ -77,7 +58,6 @@ impl Event {
     }
 
     /// Set/Change an event's start time
-    #[must_use]
     pub fn with_start(self, start: NaiveDateTime) -> Result<Self, EventError> {
         // check how many seconds from the start time the end time is, if the value
         // is negative that means the start time is AFTER the end time which
@@ -115,6 +95,7 @@ impl Event {
 //       was made to get all of the events given some time range,
 
 /// Represents a calendar of events
+#[derive(Default)]
 pub struct EventCalendar(BTreeSet<Event>);
 
 impl EventCalendar {
@@ -125,8 +106,8 @@ impl EventCalendar {
     }
 
     /// return an iterator of all events between start and end
-    pub fn events_in_range<'cal>(
-        &'cal self,
+    pub fn events_in_range(
+        &self,
         start: NaiveDateTime,
         end: NaiveDateTime,
     ) -> impl Iterator<Item = &Event> {
@@ -137,15 +118,6 @@ impl EventCalendar {
 
     pub fn first_event(&self) -> Option<&Event> {
         self.0.first()
-    }
-}
-
-// NOTE: this will need to be changed to scan for files
-// already present on the server and load those if they exist
-impl Default for EventCalendar {
-    fn default() -> Self {
-        // get current time in standard timezone
-        Self(BTreeSet::new())
     }
 }
 
@@ -299,7 +271,7 @@ mod test {
         assert_eq!(true, status.is_err());
 
         // try to set invalid end time
-        let mut event = Event::new(String::from("Birthday Party"), &naive_date);
+        let event = Event::new(String::from("Birthday Party"), &naive_date);
         let status = event.with_end(NaiveDateTime::new(naive_date, first_time));
         assert_eq!(true, status.is_err());
     }
@@ -326,7 +298,7 @@ mod test {
         assert_eq!(d1.cmp(&d4), Ordering::Less);
 
         // 01/01/2023-00:00:00 < 01/01/2024-00:00:00
-        let mut d5 = Event::new("A".into(), &ndt.date().with_year(2024).unwrap());
+        let d5 = Event::new("A".into(), &ndt.date().with_year(2024).unwrap());
         assert_eq!(d1.cmp(&d5), Ordering::Less);
 
         // 01/01/2023-00:00:00 < 01/02/2023-00:00:00
