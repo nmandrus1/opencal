@@ -1,4 +1,4 @@
-# calcium
+# OpenCal
 Server for collaborative calendar 
 
 Documentation???? 
