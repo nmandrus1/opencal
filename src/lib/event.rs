@@ -82,7 +82,7 @@ impl Event {
         self.name = new_name;
     }
 
-    pub fn serialize(self) -> String {
+    pub fn serialize(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
 }
