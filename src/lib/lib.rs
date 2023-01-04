@@ -261,4 +261,20 @@ mod test {
         );
         assert_eq!(iter.next(), None);
     }
+
+    #[test]
+    fn test_event_serialize() {
+        let nd = first_day_2023_nd();
+        let e = Event::new("A".into(), &nd);
+
+        let first_time = first_day_2023_ndt().format("%Y-%m-%dT%H:%M:%S").to_string();
+        let last_time = NaiveDateTime::new(nd, last_time_nt())
+            .format("%Y-%m-%dT%H:%M:%S")
+            .to_string();
+
+        assert_eq!(
+            e.serialize(),
+            format!("{{\"start\":\"{first_time}\",\"end\":\"{last_time}\",\"name\":\"A\"}}",)
+        )
+    }
 }
