@@ -301,8 +301,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "calcium"
-version = "0.1.0"
+name = "calib"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a1fdb75ac770872c14122cce7b3c86a97b2673c8e92c88511ef365028252dae"
 dependencies = [
  "chrono",
  "num-traits",
@@ -812,7 +814,7 @@ name = "opencal"
 version = "0.1.0"
 dependencies = [
  "actix-web",
- "calcium",
+ "calib",
  "chrono",
  "serde",
  "serde_json",

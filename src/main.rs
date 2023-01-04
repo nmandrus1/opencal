@@ -1,5 +1,5 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
-use calcium::{Event, EventCalendar, EventError};
+use calib::{Event, EventCalendar, EventError};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
