@@ -303,8 +303,7 @@ dependencies = [
 [[package]]
 name = "calib"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a1fdb75ac770872c14122cce7b3c86a97b2673c8e92c88511ef365028252dae"
+source = "git+https://github.com/nmandrus1/calib.git#769a943d7c1026448d8abfa462207d0463f024d5"
 dependencies = [
  "chrono",
  "num-traits",
