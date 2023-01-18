@@ -1,17 +1,17 @@
 ### Basic Setup Instructions for Contributing to OpenCal
 
 ## Installing Rust and Setting up a Development Environment
-- Install rust using the [rustup](https://rustup.rs) toolchain manager
-  - If you don't already have rust installed follow the prompt and just accept the default options. If you already have rust installed be sure to update your rust version and install the nightly toolchain
+Install rust using the [rustup](https://rustup.rs) toolchain manager
+- If you don't already have rust installed follow the prompt and just accept the default options. If you already have rust installed be sure to update your rust version and install the nightly toolchain
 
   - `$ rustup update`
   - `$ rustup toolchain install nightly --allow-downgrade`
 
-  - Be sure to install clippy (a rust linter) which you can use with the following commands
+- Be sure to install clippy (a rust linter) which you can use with the following commands
   - `$ rustup component add clippy`
   - `$ cargo clippy`
   
-  - Install a rust code formatter and run it with cargo
+- Install a rust code formatter and run it with cargo
   - `$ rustup component add rustfmt`
   - `$ cargo fmt`
 
