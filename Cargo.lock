@@ -303,7 +303,7 @@ dependencies = [
 [[package]]
 name = "calib"
 version = "0.1.1"
-source = "git+https://github.com/nmandrus1/calib.git#769a943d7c1026448d8abfa462207d0463f024d5"
+source = "git+https://github.com/nmandrus1/calib.git?branch=devel#64da2422bd49e4a51ac56313b0eb88f98d810d45"
 dependencies = [
  "chrono",
  "num-traits",
@@ -817,6 +817,7 @@ dependencies = [
  "chrono",
  "serde",
  "serde_json",
+ "thiserror",
 ]
 
 [[package]]

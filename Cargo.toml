@@ -14,4 +14,5 @@ actix-web = "4.2.1"
 chrono = { version = "0.4.23", features = ["std", "serde"] }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
-calib = { git = "https://github.com/nmandrus1/calib.git"}
+calib = { git = "https://github.com/nmandrus1/calib.git", branch = "devel"}
+thiserror = "1.0.38"

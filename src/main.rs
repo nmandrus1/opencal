@@ -1,8 +1,33 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
-use calib::{Event, EventCalendar, EventError};
+use actix_web::{
+    get,
+    http::{header::ContentType, StatusCode},
+    post, web, App, HttpResponse, HttpServer, Responder, ResponseError,
+};
+use calib::{Event, EventCalendar, IntoUuid};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+enum ServerError {
+    #[error("No event for corresponding uuid")]
+    EventNotFound,
+}
+
+impl ResponseError for ServerError {
+    fn error_response(&self) -> HttpResponse {
+        HttpResponse::build(self.status_code())
+            .insert_header(ContentType::html())
+            .body(self.to_string())
+    }
+
+    fn status_code(&self) -> StatusCode {
+        match self {
+            ServerError::EventNotFound => StatusCode::NOT_FOUND,
+        }
+    }
+}
 
 struct AppState {
     cal: Mutex<EventCalendar>,
@@ -14,12 +39,42 @@ struct RangeQuery {
     end: NaiveDateTime,
 }
 
+#[derive(Deserialize)]
+struct EventQuery {
+    uuid: String,
+}
+
+#[get("/event")]
+async fn event(
+    query: web::Query<EventQuery>,
+    data: web::Data<AppState>,
+) -> Result<String, ServerError> {
+    let cal = data.cal.lock().unwrap();
+    println!("event request: {}", query.uuid);
+    match cal.get(query.uuid.as_str()) {
+        Some(evt) => Ok(evt.serialize()),
+        None => Err(ServerError::EventNotFound),
+    }
+}
+
+#[get("/remove_event")]
+async fn remove_event(
+    query: web::Query<EventQuery>,
+    data: web::Data<AppState>,
+) -> Result<String, ServerError> {
+    let mut cal = data.cal.lock().unwrap();
+    match cal.remove(query.uuid.as_str()) {
+        Some(e) => Ok(format!("Event: {} removed...", e.name())),
+        None => Err(ServerError::EventNotFound),
+    }
+}
+
 #[get("/event_range")]
 async fn event_range(query: web::Query<RangeQuery>, data: web::Data<AppState>) -> impl Responder {
     let cal = data.cal.lock().unwrap();
-    let events: Vec<&Event> = cal
+    let events: Vec<String> = cal
         .events_in_range(query.start, query.end)
-        .map(|(_, evt)| evt)
+        .map(|evt| evt.serialize())
         .collect();
 
     serde_json::to_string(&events).unwrap()
@@ -84,6 +139,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
+            .service(event)
+            .service(remove_event)
             .service(event_range)
             .service(first_event)
             .service(hello)
