@@ -1,5 +1,5 @@
 # OpenCal
 Server for collaborative calendar 
 
-Documentation???? 
-*insert relevant xkcd comic here*
+Documentation
+[Setup](docs/SETUP.md)
