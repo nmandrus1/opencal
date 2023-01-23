@@ -3,9 +3,9 @@ use actix_web::{
     http::{header::ContentType, StatusCode},
     post, web, App, HttpResponse, HttpServer, Responder, ResponseError,
 };
-use calib::{Event, EventCalendar, IntoUuid};
+use calib::{Event, EventCalendar};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::sync::Mutex;
 use thiserror::Error;
 
