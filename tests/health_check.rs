@@ -9,7 +9,7 @@ async fn health_check_works() {
     let client = reqwest::Client::new();
 
     let resp = client
-        .get(&format!("{}/health_check", &addr))
+        .get(&format!("http://{}/health_check", &addr))
         .send()
         .await
         .expect("Failed to send request to server");
