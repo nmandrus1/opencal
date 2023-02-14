@@ -96,9 +96,7 @@ impl Handler<server::Message> for WsCalSession {
     type Result = ();
 
     /// if we recieve a server::Message from ChatServer then forward it over to the client
-    fn handle(&mut self, _msg: server::Message, _ctx: &mut Self::Context) {
-        ()
-    }
+    fn handle(&mut self, _msg: server::Message, _ctx: &mut Self::Context) {}
 }
 
 /// WebSocket message handler

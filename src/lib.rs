@@ -1,7 +1,6 @@
-use actix::{Actor, Addr, StreamHandler};
+use actix::{Actor, Addr};
 use actix_web::{dev::Server, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use actix_web_actors::ws;
-use session::WsCalSession;
 use std::{net::TcpListener, time::Instant};
 
 mod server;
