@@ -22,3 +22,58 @@ Breakdown:
 **Sycamore needs an HTML file to inject the code into**
 
 Run `trunk serve` from the command line to run, access at localhost:8080
+
+
+### Views
+Div examples:
+```
+view! { cx,
+    // A simple div
+    div {}
+    // A div with a class
+    div(class="foo")
+    // An empty paragraph
+    p {}
+    // Custom elements!
+    my-custom-element {}
+}
+```
+
+Nesting example:
+```
+view! { cx,
+    div {
+        p {
+            span { "Hello " }
+            strong { "World!" }
+        }
+    }
+}
+```
+
+You can insert code into views if it has a `std::fmt::display` property:
+```
+let my_number = 123;
+
+view! { cx,
+    p {
+        "This is my number: " (my_number)
+    }
+}
+```
+
+Can even nest views inside views:
+```
+let inner_view = view! { cx,
+    "Inside"
+};
+
+let outer_view = view! { cx,
+    "Outside"
+    div {
+        (inner_view)
+    }
+};
+```
+
+
