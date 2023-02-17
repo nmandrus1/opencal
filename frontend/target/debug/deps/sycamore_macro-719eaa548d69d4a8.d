@@ -1,0 +1,11 @@
+/mnt/c/Users/ethan/OneDrive/Documents/GitHub/opencal/frontend/target/debug/deps/libsycamore_macro-719eaa548d69d4a8.so: /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/lib.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/component/mod.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/prop.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/mod.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/codegen.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/ir.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/parse.rs
+
+/mnt/c/Users/ethan/OneDrive/Documents/GitHub/opencal/frontend/target/debug/deps/sycamore_macro-719eaa548d69d4a8.d: /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/lib.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/component/mod.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/prop.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/mod.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/codegen.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/ir.rs /home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/parse.rs
+
+/home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/lib.rs:
+/home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/component/mod.rs:
+/home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/prop.rs:
+/home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/mod.rs:
+/home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/codegen.rs:
+/home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/ir.rs:
+/home/tuttle2/.cargo/registry/src/github.com-1ecc6299db9ec823/sycamore-macro-0.8.2/src/view/parse.rs:
