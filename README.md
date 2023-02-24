@@ -39,15 +39,16 @@ OpenCal is a Server for a Collaborative Calendar
 git clone https://github.com/nmandrus1/opencal
 ```
 
-5. Install the needed dependencies and run the program
+5. Move to the frontend, install the needed dependencies and run the program
 
 ```sh
-cargo run
+cd frontend && trunk serve
 ```
 
 ### Development
 
 ```bash
+## Backend
 # build 
 cargo build
 
@@ -56,6 +57,9 @@ cargo build
 
 # build && run
 cargo run
+
+## frontend
+trunk serve
 ```
 
 ## Contributions
