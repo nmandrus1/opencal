@@ -1,0 +1,39 @@
+.sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+.navbar {
+    border-bottom: 5px solid #9A2A2A;
+    padding: 10px;
+    background-color: white;
+    align-items: center;
+}
+
+.navbar li {
+    display: inline;
+    padding: 5px;
+}
+
+.settings-bar {
+    padding-right: 20px;
+}
+
+.navbar li:not(.active) {
+    transition: background-color 0.3s linear;
+}
+
+/* Change the link color to #111 (black) on hover */
+.navbar li:not(.active):hover {
+    background-color: gray;
+}
+
+.content {
+    margin-top: 70px;
+}
+
+.space-between {
+    display: flex;
+    justify-content: space-between;
+}
