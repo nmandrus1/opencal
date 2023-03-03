@@ -5,7 +5,7 @@
 }
 
 .navbar {
-    border-bottom: 5px solid #9A2A2A;
+    border-bottom: 3px solid #999;
     padding: 10px;
     background-color: white;
     align-items: center;
@@ -34,7 +34,7 @@
 
 
 .content {
-    margin-top: 70px;
+    margin-top: 55px;
 }
 
 .space-between {

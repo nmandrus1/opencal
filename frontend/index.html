@@ -6,6 +6,7 @@
    <meta charset="UTF-8" />
    <link rel="stylesheet" href="css/web.css">
    <link rel="stylesheet" href="css/navbar.css"> 
+   <script src="js/web.js"></script>
 </head>
 
 <body>
@@ -32,12 +33,55 @@
 
    </div>
    <div class="content">
-        <p>text1</p>
-        <p>text2</p>
-        <p>text3</p>
-        <p>text4</p>
-        <p>text5</p>
-        <p>text6</p>
+        <div class="sidebar">
+            <h2 style="padding: 5px;">Tags</h2>
+            
+            <button class="collapsible">Group 1</button>
+            <div class="tag-group">
+                <div class="tag">
+                    <input type="checkbox" id="Group_1-Home">
+                    <label for="Group_1-Home">Home</label>
+                </div>
+                <div class="tag">
+                    <input type="checkbox" id="Group_1-Work">
+                    <label for="Group_1-Work">Work</label>
+                </div>
+            </div>
+            
+            
+            <button class="collapsible">Group 2</button>
+            <div class="tag-group">
+                <div class="tag">
+                    <input type="checkbox" id="Group_2-Rush_Events">
+                    <label for="Group_2-Rush_Events">Rush Events</label>
+                </div>
+                <div class="tag">
+                    <input type="checkbox" id="Group_2-Club_Events">
+                    <label for="Group_2-Club_Events">Club Events</label>
+                </div>
+            </div>
+
+            
+            <button class="collapsible">Group 3</button>
+            <div class="tag-group">
+                <div class="tag">
+                    <input type="checkbox" id="Group_3-Birthdays">
+                    <label for="Group_3-Birthdays">Birthdays</label>
+                </div>
+                <div class="tag">
+                    <input type="checkbox" id="Group_3-Holidays">
+                    <label for="Group_3-Holidays">Holidays</label>
+                </div>
+                <div class="tag">
+                    <input type="checkbox" id="Group_3-Family_Events">
+                    <label for="Group_3-Family_Events">Family Events</label>
+                </div>
+            </div>
+            
+        </div>
+        <div class="calendar">
+            calendar
+        </div>
    </div>
 </body>
 
