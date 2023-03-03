@@ -5,6 +5,7 @@ use std::net::TcpListener;
 #[actix_rt::test]
 async fn health_check_works() {
     let addr = spawn_app();
+    println!("Connecting to: {}", addr);
 
     let client = reqwest::Client::new();
 
@@ -13,6 +14,8 @@ async fn health_check_works() {
         .send()
         .await
         .expect("Failed to send request to server");
+
+    // println!("{:?}", resp);
 
     // check response
     assert!(resp.status().is_success());

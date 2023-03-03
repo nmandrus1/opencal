@@ -1,6 +1,9 @@
 use actix::{Actor, Addr};
+use actix_web::middleware::Logger;
 use actix_web::{dev::Server, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use actix_web_actors::ws;
+use log;
+use std::io::Write;
 use std::{net::TcpListener, time::Instant};
 
 mod server;
@@ -8,6 +11,7 @@ mod session;
 
 // basic health check end_point
 async fn health_check() -> impl Responder {
+    log::info!("Request made to the health_check endroute");
     HttpResponse::Ok().finish()
 }
 
@@ -18,7 +22,12 @@ async fn ws_route(
     srv: web::Data<Addr<server::CalServer>>,
 ) -> Result<HttpResponse, Error> {
     // start the web socket server here
-    println!("Knock Knock");
+    log::info!("Request made to the websocket endroute");
+    println!("{:?}", req);
+
+    let mut file = std::fs::File::create("debug.txt").unwrap();
+    writeln!(&mut file, "{:?}\n\n", req).unwrap();
+
     ws::start(
         session::WsCalSession {
             id: 0,
@@ -37,6 +46,7 @@ pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
 
     let server = HttpServer::new(move || {
         App::new()
+            .wrap(Logger::default())
             .app_data(web::Data::new(server.clone()))
             .route("/health_check", web::get().to(health_check))
             .route("/ws", web::get().to(ws_route))
