@@ -2,7 +2,6 @@ use actix::{Actor, Addr};
 use actix_web::middleware::Logger;
 use actix_web::{dev::Server, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use actix_web_actors::ws;
-use log;
 use std::io::Write;
 use std::{net::TcpListener, time::Instant};
 
