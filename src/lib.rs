@@ -5,6 +5,7 @@ use actix_web_actors::ws;
 use std::io::Write;
 use std::{net::TcpListener, time::Instant};
 
+mod calendar;
 mod server;
 mod session;
 

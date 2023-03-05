@@ -367,19 +367,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "calib"
-version = "0.1.1"
-source = "git+https://github.com/nmandrus1/calib.git?branch=devel#64da2422bd49e4a51ac56313b0eb88f98d810d45"
-dependencies = [
- "chrono",
- "num-traits",
- "serde",
- "serde_json",
- "thiserror",
- "uuid",
-]
-
-[[package]]
 name = "cc"
 version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -869,6 +856,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "icalendar"
+version = "0.15.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f730bf0dc0a06f7e19c4ca6b731427d741384338b60128e5d0d00aeb0b5f071"
+dependencies = [
+ "chrono",
+ "iso8601",
+ "nom",
+ "uuid",
+]
+
+[[package]]
 name = "idna"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -923,6 +922,15 @@ dependencies = [
  "io-lifetimes",
  "rustix",
  "windows-sys",
+]
+
+[[package]]
+name = "iso8601"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "924e5d73ea28f59011fec52a0d12185d496a9b075d360657aed2a5707f701153"
+dependencies = [
+ "nom",
 ]
 
 [[package]]
@@ -1032,6 +1040,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
 
 [[package]]
+name = "minimal-lexical"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
+
+[[package]]
 name = "miniz_oxide"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1068,6 +1082,16 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
+]
+
+[[package]]
+name = "nom"
+version = "7.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
+dependencies = [
+ "memchr",
+ "minimal-lexical",
 ]
 
 [[package]]
@@ -1113,10 +1137,10 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "actix-web-actors",
- "calib",
  "chrono",
  "env_logger",
  "futures-util",
+ "icalendar",
  "log",
  "rand",
  "reqwest",
@@ -1788,8 +1812,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "422ee0de9031b5b948b97a8fc04e3aa35230001a722ddd27943e0be31564ce4c"
 dependencies = [
  "getrandom",
- "rand",
- "serde",
 ]
 
 [[package]]

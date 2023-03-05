@@ -4,6 +4,7 @@
 use actix::prelude::*;
 use rand::{self, rngs::ThreadRng, Rng};
 
+use icalendar::Event;
 use std::collections::{HashMap, HashSet};
 
 /// Message sent to a calendar session
