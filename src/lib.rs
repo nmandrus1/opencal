@@ -6,6 +6,7 @@ use std::io::Write;
 use std::{net::TcpListener, time::Instant};
 
 mod calendar;
+mod event;
 mod server;
 mod session;
 
