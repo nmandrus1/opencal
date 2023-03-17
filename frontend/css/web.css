@@ -19,10 +19,11 @@ body {
 }
 
 .sidebar {
-    padding: 10px;
+
     flex: 1 1 15%;
     border-right: 3px solid #999;
-    
+    overflow-y: auto;
+    background-color: #f1f1f1;
 }
 
 .calendar {
@@ -30,13 +31,8 @@ body {
     flex: 1 1 100%;
 }
 
-.tag-group h3 {
-    padding: 5px;
-}
-
 .tag-group .tag {
-    margin-bottom: 10px;
-    margin-left: 10px;
+    padding: 5px;
     
 }
 

@@ -11,6 +11,7 @@ window.onload = function() {
               content.style.maxHeight = content.scrollHeight + "px";
             }
           });
+        button.click();
     });
 }
 
