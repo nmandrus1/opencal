@@ -35,7 +35,7 @@ impl<'a> Calendar<'a> {
     pub fn add_event(&mut self, eid: EventID, event: Event) -> Option<Event> {
         // if the event is already in the map return None
         if self.event_map.contains_key(&eid) {
-            Some(event)
+            return Some(event);
         }
 
         let key = self.arena.insert(event);
