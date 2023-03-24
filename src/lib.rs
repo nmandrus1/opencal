@@ -24,10 +24,6 @@ async fn ws_route(
 ) -> Result<HttpResponse, Error> {
     // start the web socket server here
     log::info!("Request made to the websocket endroute");
-    println!("{:?}", req);
-
-    let mut file = std::fs::File::create("debug.txt").unwrap();
-    writeln!(&mut file, "{:?}\n\n", req).unwrap();
 
     ws::start(
         session::WsCalSession {
