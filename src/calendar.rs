@@ -43,6 +43,7 @@ unsafe impl Key for CalKey {
     }
 }
 
+#[derive(Debug)]
 pub struct EventRange {
     start: DateTime<Utc>,
     end: DateTime<Utc>,
@@ -61,6 +62,7 @@ impl EventRange {
     }
 }
 
+#[derive(Debug)]
 struct CalKeyRange {
     start: CalKey,
     end: CalKey,
@@ -77,7 +79,7 @@ impl From<EventRange> for CalKeyRange {
             },
             end: CalKey {
                 inner: DefaultKey::null(),
-                start: value.start,
+                start: value.end,
             },
         }
     }
@@ -225,14 +227,17 @@ mod tests {
         cal.add_event(EventID(3), ev3);
 
         let mut iter = cal.range(EventRange::from(None, None));
+        // let test = EventRange::from(None, None);
+        // let test2 = CalKeyRange::from(test);
+        // println!("{:#?}", test2);
 
         // ev3 is should appear first bc its Jan 1 then ev2 and ev3
 
-        iter.for_each(|v| println!("{:?}", v));
+        // iter.for_each(|v| println!("{:#?}", v));
 
-        // assert_eq!(iter.next().unwrap().get_summary(), Some(ev3_summary));
-        // assert_eq!(iter.next().unwrap().get_summary(), Some(ev2_summary));
-        // assert_eq!(iter.next().unwrap().get_summary(), Some(ev1_summary));
-        // assert_eq!(iter.next(), None);
+        assert_eq!(iter.next().unwrap().get_summary(), Some(ev3_summary));
+        assert_eq!(iter.next().unwrap().get_summary(), Some(ev2_summary));
+        assert_eq!(iter.next().unwrap().get_summary(), Some(ev1_summary));
+        assert_eq!(iter.next(), None);
     }
 }
