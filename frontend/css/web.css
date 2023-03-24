@@ -17,3 +17,10 @@ body {
     align-items: stretch;
     
 }
+
+
+
+.calendar {
+    padding: 10px;
+    flex: 1 1 100%;
+}

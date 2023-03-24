@@ -1,6 +1,6 @@
 .sidebar {
 
-    flex: 1 1 15%;
+    flex: 1 1 20%;
     
     overflow-y: auto;
     background-color: #f1f1f1;
@@ -34,4 +34,9 @@
 
 .active, .collapsible:hover {
     background-color: #555;
+}
+
+.sidebar-calendar {
+    position: fixed;
+    bottom: 0;
 }

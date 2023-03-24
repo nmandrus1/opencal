@@ -8,6 +8,7 @@
    <link rel="stylesheet" href="css/navbar.css"> 
    <link rel="stylesheet" href="css/sidebar.css">
    <link rel="stylesheet" href="css/calendar.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
    <script src="js/web.js"></script>
 </head>
 
@@ -18,10 +19,9 @@
         </div>
         <div class="nav-buttons-bar">
             <ul>
-                <li><a>Day</a></li>
-                <li><a>Week</a></li>
-                <li><a>Month</a></li>
-                <li><a>Year</a></li>
+                <li><a>Calendar</a></li>
+                <li><a>Chat</a></li>
+                <li><a>Groups</a></li>
             </ul>
         </div>
         <div class="settings-bar">
@@ -36,54 +36,141 @@
    </div>
    <div class="content">
         <div class="sidebar">
-            <h2 style="padding: 10px;">Tags</h2>
+            <h2 style="padding: 10px;">Groups</h2>
             
-            <button class="collapsible active">Group 1</button>
-            <div class="tag-group">
-                <div class="tag">
-                    <input type="checkbox" id="Group_1-Home">
-                    <label for="Group_1-Home">Home</label>
+            <div class="tag-section">
+                <button class="collapsible">Group 1</button>
+                <div class="tag-group">
+                    <div class="tag">
+                        <input type="checkbox" id="Group_1-Home">
+                        <label for="Group_1-Home">Home</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_1-Work">
+                        <label for="Group_1-Work">Work</label>
+                    </div>
                 </div>
-                <div class="tag">
-                    <input type="checkbox" id="Group_1-Work">
-                    <label for="Group_1-Work">Work</label>
+                
+                <button class="collapsible">Group 2</button>
+                <div class="tag-group">
+                    <div class="tag">
+                        <input type="checkbox" id="Group_2-Rush_Events">
+                        <label for="Group_2-Rush_Events">Rush Events</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_2-Club_Events">
+                        <label for="Group_2-Club_Events">Club Events</label>
+                    </div>
+                </div>
+
+                <button class="collapsible">Group 3</button>
+                <div class="tag-group">
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Birthdays">
+                        <label for="Group_3-Birthdays">Birthdays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Holidays">
+                        <label for="Group_3-Holidays">Holidays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Family_Events">
+                        <label for="Group_3-Family_Events">Family Events</label>
+                    </div>
+                </div>
+                
+                <button class="collapsible">Group 3</button>
+                <div class="tag-group">
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Birthdays">
+                        <label for="Group_3-Birthdays">Birthdays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Holidays">
+                        <label for="Group_3-Holidays">Holidays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Family_Events">
+                        <label for="Group_3-Family_Events">Family Events</label>
+                    </div>
+                </div>
+                <button class="collapsible">Group 3</button>
+                <div class="tag-group">
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Birthdays">
+                        <label for="Group_3-Birthdays">Birthdays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Holidays">
+                        <label for="Group_3-Holidays">Holidays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Family_Events">
+                        <label for="Group_3-Family_Events">Family Events</label>
+                    </div>
+                </div>
+                <button class="collapsible">Group 3</button>
+                <div class="tag-group">
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Birthdays">
+                        <label for="Group_3-Birthdays">Birthdays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Holidays">
+                        <label for="Group_3-Holidays">Holidays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Family_Events">
+                        <label for="Group_3-Family_Events">Family Events</label>
+                    </div>
+                </div>
+                <button class="collapsible">Group 3</button>
+                <div class="tag-group">
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Birthdays">
+                        <label for="Group_3-Birthdays">Birthdays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Holidays">
+                        <label for="Group_3-Holidays">Holidays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Family_Events">
+                        <label for="Group_3-Family_Events">Family Events</label>
+                    </div>
+                </div>
+                <button class="collapsible">Group 3</button>
+                <div class="tag-group">
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Birthdays">
+                        <label for="Group_3-Birthdays">Birthdays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Holidays">
+                        <label for="Group_3-Holidays">Holidays</label>
+                    </div>
+                    <div class="tag">
+                        <input type="checkbox" id="Group_3-Family_Events">
+                        <label for="Group_3-Family_Events">Family Events</label>
+                    </div>
                 </div>
             </div>
             
-            
-            <button class="collapsible active">Group 2</button>
-            <div class="tag-group">
-                <div class="tag">
-                    <input type="checkbox" id="Group_2-Rush_Events">
-                    <label for="Group_2-Rush_Events">Rush Events</label>
-                </div>
-                <div class="tag">
-                    <input type="checkbox" id="Group_2-Club_Events">
-                    <label for="Group_2-Club_Events">Club Events</label>
+            <div class="sidebar-calendar">
+                <div class="topbar">
+                    <button>Left</button>
+                    <h1>August</h1>
+                    <button>Right</button>
                 </div>
             </div>
 
             
-            <button class="collapsible active">Group 3</button>
-            <div class="tag-group">
-                <div class="tag">
-                    <input type="checkbox" id="Group_3-Birthdays">
-                    <label for="Group_3-Birthdays">Birthdays</label>
-                </div>
-                <div class="tag">
-                    <input type="checkbox" id="Group_3-Holidays">
-                    <label for="Group_3-Holidays">Holidays</label>
-                </div>
-                <div class="tag">
-                    <input type="checkbox" id="Group_3-Family_Events">
-                    <label for="Group_3-Family_Events">Family Events</label>
-                </div>
-            </div>
-            
         </div>
         <div class="calendar">
             <div class="topbar">
+                <button>Left</button>
                 <h1>August</h1>
+                <button>Right</button>
             </div>
             <div class="year-display">
 
