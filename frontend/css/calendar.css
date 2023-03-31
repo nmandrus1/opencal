@@ -4,29 +4,34 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
-
-.topbar {
+.calendar-navbar {
     display: flex;
-    justify-content: center;
+    justify-content: left;
 }
 
 .time-display {
     padding: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
 .time-display p {
+    padding: 10px;
+    flex: 1 1 auto;
+}
+
+.topbar p {
     padding: 10px;
 }
 
 .days-display {
     padding: 10px;
     display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    text-align: center;
 }
 
 .day {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
     padding: 20px;
 }
