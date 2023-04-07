@@ -1,37 +1,33 @@
 .calendar {
     padding: 10px;
     flex: 1 1 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
 }
 .calendar-navbar {
     display: flex;
     justify-content: left;
 }
 
-.time-display {
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-}
-
-.time-display p {
-    padding: 10px;
-    flex: 1 1 auto;
-}
-
-.topbar p {
-    padding: 10px;
-}
-
-.days-display {
-    padding: 10px;
-    display: flex;
-    max-width: 100%;
-    text-align: center;
-}
-
 .day {
     flex: 1 1 auto;
     padding: 20px;
+}
+
+table, th, td {
+    border: 1px solid;
+}
+
+table {
+    border-collapse: collapse;
+  }
+
+table {
+    width: 100%;
+}
+
+tr {
+    margin: 10px;
+}
+
+#calendarTable {
+    height: 100%;
 }
