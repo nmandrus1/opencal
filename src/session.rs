@@ -20,7 +20,7 @@ pub struct WsCalSession {
     /// otherwise we drop connection.
     pub hb: Instant,
 
-    /// Chat server
+    /// Cal server
     pub addr: Addr<server::CalServer>,
 }
 
@@ -119,7 +119,74 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsCalSession {
             ws::Message::Pong(_) => {
                 self.hb = Instant::now();
             }
-            ws::Message::Text(text) => println!("Text recieved: {}", text),
+            ws::Message::Text(text) => {
+                let msg = text.trim();
+
+                if msg.starts_with('/') {
+                    let v: Vec<&str> = msg.splitn(2, ' ').collect();
+                    match v[0] {
+                        "/join" => {
+                            if v.len() == 2 {
+                                self.addr
+                                    .send(server::Join {
+                                        id: self.id,
+                                        name: v[1].to_owned(),
+                                    })
+                                    .into_actor(self)
+                                    .then(|res, _act, ctx| {
+                                        ctx.text(match res {
+                                            Ok(v) => match v {
+                                                Ok(s) => s,
+                                                Err(e) => e.to_string(),
+                                            },
+                                            Err(e) => e.to_string(),
+                                        });
+                                        fut::ready(())
+                                    })
+                                    .wait(ctx)
+                            } else {
+                                ctx.text("Please specify a calendar to join");
+                            }
+                        }
+
+                        "/list" => self
+                            .addr
+                            .send(server::ListCals)
+                            .into_actor(self)
+                            .then(|res, act, ctx| {
+                                ctx.text(res.unwrap());
+                                fut::ready(())
+                            })
+                            .wait(ctx),
+
+                        "/create" => {
+                            if v.len() == 2 {
+                                self.addr
+                                    .send(server::CreateCal {
+                                        id: self.id,
+                                        name: v[1].to_owned(),
+                                    })
+                                    .into_actor(self)
+                                    .then(|res, _act, ctx| {
+                                        ctx.text(match res {
+                                            Ok(v) => match v {
+                                                Ok(s) => s,
+                                                Err(e) => e.to_string(),
+                                            },
+                                            Err(e) => e.to_string(),
+                                        });
+                                        fut::ready(())
+                                    })
+                                    .wait(ctx)
+                            } else {
+                                ctx.text("Please give the calendar a name");
+                            }
+                        }
+
+                        _ => ctx.text("Invalid command"),
+                    }
+                }
+            }
             ws::Message::Binary(_) => println!("Unexpected binary"),
             ws::Message::Close(reason) => {
                 ctx.close(reason);

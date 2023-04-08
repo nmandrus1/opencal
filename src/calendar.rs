@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use icalendar::{Component, Event};
 use std::{
     collections::{BTreeSet, HashMap},
@@ -107,12 +107,18 @@ pub struct Calendar {
 
     /// A hashmap of events for random access based on an Event's ID
     event_map: HashMap<EventID, CalKey>,
+
+    /// String representing the name of a calendar
+    name: String,
 }
 
 impl Calendar {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(name: String) -> Self {
+        let mut slf = Self::default();
+        slf.name = name;
+        slf
     }
+
     /// Add an event to the calendar
     ///
     /// If the Event is already in the Calendar, then [None](https://doc.rust-lang.org/nightly/core/option/enum.Option.hmtl) is returned
@@ -154,7 +160,7 @@ impl Calendar {
 
 #[cfg(test)]
 mod tests {
-    use chrono::{Days, NaiveDate, NaiveTime};
+    use chrono::{Days, NaiveDate, NaiveDateTime, NaiveTime};
     use icalendar::EventLike;
 
     use super::*;
@@ -227,13 +233,8 @@ mod tests {
         cal.add_event(EventID(3), ev3);
 
         let mut iter = cal.range(EventRange::from(None, None));
-        // let test = EventRange::from(None, None);
-        // let test2 = CalKeyRange::from(test);
-        // println!("{:#?}", test2);
 
         // ev3 is should appear first bc its Jan 1 then ev2 and ev3
-
-        // iter.for_each(|v| println!("{:#?}", v));
 
         assert_eq!(iter.next().unwrap().get_summary(), Some(ev3_summary));
         assert_eq!(iter.next().unwrap().get_summary(), Some(ev2_summary));
