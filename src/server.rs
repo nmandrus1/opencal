@@ -27,6 +27,20 @@ pub struct Disconnect {
     pub id: usize,
 }
 
+/// Send Add request of event to calendar session
+/// Potential Fields: Time Zone, time, description
+/// Possible Returns: Boolean on success, maybe pointer or copy if necessary for other FNs
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct AddEvent;
+
+/// Send delete request of event to calendar session:
+/// Potential Fields: Time, name
+/// Possible Returns: pop() nature could be helpful, else void or bool on success
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct DeleteEvent;
+
 /// Send message to specific calendar
 #[derive(Message)]
 #[rtype(result = "()")]
