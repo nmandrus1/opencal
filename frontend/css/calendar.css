@@ -9,25 +9,34 @@
 
 .day {
     flex: 1 1 auto;
-    padding: 20px;
+    padding: 5px;
 }
 
 table, th, td {
     border: 1px solid;
 }
 
-table {
-    border-collapse: collapse;
-  }
-
-table {
-    width: 100%;
-}
-
-tr {
-    margin: 10px;
-}
-
 #calendarTable {
     height: 100%;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#calendarTable tr:not(#headerRow) {
+    height: 80px;
+}
+
+#calendarDiv {
+    height: 100%;
+    overflow-y: auto;
+}
+
+#calendarTable th {
+    position: sticky;
+    top: 0px;
+    background: gray;
+}
+
+#calendarTable td:nth-child(1) {
+    vertical-align: top;
 }

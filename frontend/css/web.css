@@ -6,7 +6,7 @@
 html, body {
     height: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 body {
@@ -18,11 +18,4 @@ body {
     flex: 1 1 100%;
     align-items: stretch;
     
-}
-
-
-
-.calendar {
-    padding: 10px;
-    flex: 1 1 100%;
 }

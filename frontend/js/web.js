@@ -1,6 +1,7 @@
-// --------------------------------------------------------
-//              collapsible tag groups
+
+
 window.onload = function() {
+  // used for collapsible tag groups
   Array.from(document.getElementsByClassName("collapsible")).forEach(button => {
       button.addEventListener("click", function() {
           this.classList.toggle("active");
@@ -14,6 +15,7 @@ window.onload = function() {
       button.click();
   });
 
+  // used to populate the calendar
   var output = "";
   var days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   var hours = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", 
@@ -28,5 +30,3 @@ window.onload = function() {
   });
   $("#calendarTable tbody").after(output);
 }
-
-// --------------------------------------------------------
