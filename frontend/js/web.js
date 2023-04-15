@@ -29,4 +29,8 @@ window.onload = function() {
     output += "</tr>";
   });
   $("#calendarTable tbody").after(output);
+  const dt = new Date();
+  let diffTZ = dt.getTimezoneOffset();
+  output = "GMT-" + ("0" + (diffTZ/60)).slice(-2);
+  $("#calendarTable #timezone").html(output);
 }

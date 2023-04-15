@@ -12,10 +12,6 @@
     padding: 5px;
 }
 
-table, th, td {
-    
-}
-
 #calendarTable {
     height: 100%;
     width: 100%;
@@ -60,6 +56,7 @@ table, th, td {
     vertical-align: bottom;
     text-align: right;
     border-left: 0px solid;
+    width: 5%;
 }
 
 #calendarTable td:nth-child(1) {
