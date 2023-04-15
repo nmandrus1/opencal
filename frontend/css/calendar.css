@@ -13,7 +13,7 @@
 }
 
 table, th, td {
-    border: 1px solid;
+    
 }
 
 #calendarTable {
@@ -31,12 +31,42 @@ table, th, td {
     overflow-y: auto;
 }
 
-#calendarTable th {
+#calendarDiv::-webkit-scrollbar {
+    width: 16px;
+}
+
+#calendarDiv::-webkit-scrollbar-track {
+    background-color: #e7e7e7;
+    border: 1px solid #cacaca;
+}
+
+#calendarDiv::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+   background-clip: content-box;
+    background-color: #9A2A2A;
+}
+
+#calendarTable th, #calendarTable #timezone {
     position: sticky;
     top: 0px;
-    background: gray;
+    background: white;
+    border-left: 1px solid;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    text-align: left;
+}
+
+#calendarTable #timezone {
+    vertical-align: bottom;
+    text-align: right;
+    border-left: 0px solid;
 }
 
 #calendarTable td:nth-child(1) {
     vertical-align: top;
+    text-align: right;
+}
+
+#calendarTable td:not(td:nth-child(1)) {
+    border: 1px solid;
 }
