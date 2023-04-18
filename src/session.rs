@@ -3,7 +3,7 @@ use std::time::{Duration, Instant};
 use actix::prelude::*;
 use actix_web_actors::ws;
 
-use crate::server;
+use crate::server::{self, ClientMessage};
 
 /// How often heartbeat pings are sent
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
@@ -47,6 +47,129 @@ impl WsCalSession {
 
             ctx.ping(b"");
         });
+    }
+
+    fn list_rooms(&mut self, ctx: &mut ws::WebsocketContext<Self>) {
+        self.addr
+            .send(server::ListCals)
+            .into_actor(self)
+            .then(|res, _act, ctx| {
+                ctx.text(res.unwrap());
+                fut::ready(())
+            })
+            .wait(ctx)
+    }
+
+    fn create_cal(&mut self, msg: server::CreateCal, ctx: &mut ws::WebsocketContext<Self>) {
+        self.addr
+            .send(msg)
+            .into_actor(self)
+            .then(|res, _act, ctx| {
+                ctx.text(match res {
+                    Ok(v) => match v {
+                        Ok(s) => s,
+                        Err(e) => e.to_string(),
+                    },
+                    Err(e) => e.to_string(),
+                });
+
+                fut::ready(())
+            })
+            .wait(ctx)
+    }
+
+    fn join_cal(&mut self, msg: server::Join, ctx: &mut ws::WebsocketContext<Self>) {
+        self.addr
+            .send(msg)
+            .into_actor(self)
+            .then(|res, _act, ctx| {
+                ctx.text(match res {
+                    Ok(v) => match v {
+                        Ok(s) => s,
+                        Err(e) => e.to_string(),
+                    },
+                    Err(e) => e.to_string(),
+                });
+
+                fut::ready(())
+            })
+            .wait(ctx)
+    }
+
+    fn add_event(&mut self, msg: server::AddEvent, ctx: &mut ws::WebsocketContext<Self>) {
+        self.addr
+            .send(msg)
+            .into_actor(self)
+            .then(|res, _act, ctx| {
+                ctx.text(match res {
+                    Ok(v) => match v {
+                        Ok(s) => format!("EventID: {:?}", s),
+                        Err(e) => e.to_string(),
+                    },
+                    Err(e) => e.to_string(),
+                });
+
+                fut::ready(())
+            })
+            .wait(ctx)
+    }
+
+    fn del_event(&mut self, msg: server::DeleteEvent, ctx: &mut ws::WebsocketContext<Self>) {
+        self.addr
+            .send(msg)
+            .into_actor(self)
+            .then(|res, _act, ctx| {
+                ctx.text(match res {
+                    Ok(inner) => match inner {
+                        Err(e) => e.to_string(),
+                        _ => "Event Deleted".to_string(),
+                    },
+                    Err(e) => e.to_string(),
+                });
+
+                fut::ready(())
+            })
+            .wait(ctx)
+    }
+
+    fn get_event(&mut self, msg: server::GetEvent, ctx: &mut ws::WebsocketContext<Self>) {
+        self.addr
+            .send(msg)
+            .into_actor(self)
+            .then(|res, _act, ctx| {
+                ctx.text(match res {
+                    Ok(inner) => match inner {
+                        Ok(s) => s,
+                        Err(e) => e.to_string(),
+                    },
+                    Err(e) => e.to_string(),
+                });
+
+                fut::ready(())
+            })
+            .wait(ctx)
+    }
+
+    fn get_event_range(
+        &mut self,
+        msg: server::GetEventsInRange,
+        ctx: &mut ws::WebsocketContext<Self>,
+    ) {
+        self.addr
+            .send(msg)
+            .into_actor(self)
+            .then(|res, _act, ctx| {
+                ctx.text(match res {
+                    Ok(inner) => match inner {
+                        Ok(s) => s,
+                        Err(e) => e.to_string(),
+                    },
+                    Err(e) => e.to_string(),
+                });
+
+                fut::ready(())
+            })
+            .wait(ctx)
     }
 }
 
@@ -120,70 +243,28 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsCalSession {
                 self.hb = Instant::now();
             }
             ws::Message::Text(text) => {
-                let msg = text.trim();
+                let msg: server::ClientMessage = match serde_json::from_slice(text.as_bytes()) {
+                    Ok(m) => m,
+                    Err(e) => {
+                        ctx.text(format!(
+                            "The message recieved was not understood by the server: {} ",
+                            e.to_string()
+                        ));
+                        return;
+                    }
+                };
 
-                if msg.starts_with('/') {
-                    let v: Vec<&str> = msg.splitn(2, ' ').collect();
-                    match v[0] {
-                        "/join" => {
-                            if v.len() == 2 {
-                                self.addr
-                                    .send(server::Join {
-                                        id: self.id,
-                                        name: v[1].to_owned(),
-                                    })
-                                    .into_actor(self)
-                                    .then(|res, _act, ctx| {
-                                        ctx.text(match res {
-                                            Ok(v) => match v {
-                                                Ok(s) => s,
-                                                Err(e) => e.to_string(),
-                                            },
-                                            Err(e) => e.to_string(),
-                                        });
-                                        fut::ready(())
-                                    })
-                                    .wait(ctx)
-                            } else {
-                                ctx.text("Please specify a calendar to join");
-                            }
-                        }
+                // the json sent to the server has been successfully parsed
 
-                        "/list" => self
-                            .addr
-                            .send(server::ListCals)
-                            .into_actor(self)
-                            .then(|res, act, ctx| {
-                                ctx.text(res.unwrap());
-                                fut::ready(())
-                            })
-                            .wait(ctx),
-
-                        "/create" => {
-                            if v.len() == 2 {
-                                self.addr
-                                    .send(server::CreateCal {
-                                        id: self.id,
-                                        name: v[1].to_owned(),
-                                    })
-                                    .into_actor(self)
-                                    .then(|res, _act, ctx| {
-                                        ctx.text(match res {
-                                            Ok(v) => match v {
-                                                Ok(s) => s,
-                                                Err(e) => e.to_string(),
-                                            },
-                                            Err(e) => e.to_string(),
-                                        });
-                                        fut::ready(())
-                                    })
-                                    .wait(ctx)
-                            } else {
-                                ctx.text("Please give the calendar a name");
-                            }
-                        }
-
-                        _ => ctx.text("Invalid command"),
+                match msg {
+                    ClientMessage::ListCals => self.list_rooms(ctx),
+                    ClientMessage::Join(join_msg) => self.join_cal(join_msg, ctx),
+                    ClientMessage::CreateCal(create_msg) => self.create_cal(create_msg, ctx),
+                    ClientMessage::AddEvent(add_msg) => self.add_event(add_msg, ctx),
+                    ClientMessage::DeleteEvent(del_msg) => self.del_event(del_msg, ctx),
+                    ClientMessage::GetEvent(get_event_msg) => self.get_event(get_event_msg, ctx),
+                    ClientMessage::GetEventsInRange(get_range_msg) => {
+                        self.get_event_range(get_range_msg, ctx)
                     }
                 }
             }

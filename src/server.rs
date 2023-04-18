@@ -2,12 +2,15 @@
 //! connections associated with each calendar.
 
 use actix::prelude::*;
+use chrono::{DateTime, Utc};
 use rand::{self, rngs::ThreadRng, Rng};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use std::collections::{HashMap, HashSet};
 
 use super::calendar::Calendar;
+use super::event::*;
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum ServerError {
@@ -19,6 +22,12 @@ pub enum ServerError {
 
     #[error("Failed to create the calendar")]
     CalendarCreationFailed,
+
+    #[error("Event does not exist")]
+    EventNotFound,
+
+    #[error("Event failed to serialize to JSON")]
+    EventFailedToSerialize,
 }
 
 /// Message sent to a calendar session
@@ -44,19 +53,51 @@ pub struct Disconnect {
 /// Send Add request of event to calendar session
 /// Potential Fields: Time Zone, time, description
 /// Possible Returns: Boolean on success, maybe pointer or copy if necessary for other FNs
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct AddEvent;
+#[derive(Debug, Message, Serialize, Deserialize)]
+#[rtype(result = "Result<EventID, ServerError>")]
+pub struct AddEvent {
+    cal_name: String,
+
+    e_name: String,
+
+    start: DateTime<Utc>,
+    end: DateTime<Utc>,
+
+    // client id
+    id: usize,
+}
 
 /// Send delete request of event to calendar session:
 /// Potential Fields: Time, name
 /// Possible Returns: pop() nature could be helpful, else void or bool on success
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct DeleteEvent;
+#[derive(Debug, Message, Serialize, Deserialize)]
+#[rtype(result = "Result<(), ServerError>")]
+pub struct DeleteEvent {
+    // client id
+    id: usize,
+
+    cal_name: String,
+
+    // eventID
+    eid: EventID,
+}
+
+#[derive(Debug, Message, Serialize, Deserialize)]
+#[rtype(result = "Result<String, ServerError>")]
+pub struct GetEvent {
+    cal_name: String,
+    eid: EventID,
+}
+
+#[derive(Debug, Message, Serialize, Deserialize)]
+#[rtype(result = "Result<String, ServerError>")]
+pub struct GetEventsInRange {
+    cal_name: String,
+    range: EventRange,
+}
 
 /// Create a calendar
-#[derive(Message)]
+#[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Result<String, ServerError>")]
 pub struct CreateCal {
     /// Client id
@@ -67,7 +108,7 @@ pub struct CreateCal {
 }
 
 /// Join calendar, if the calendar does not exists send an error back
-#[derive(Message)]
+#[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Result<String, ServerError>")]
 pub struct Join {
     /// Client ID
@@ -81,16 +122,15 @@ pub struct Join {
 #[rtype(result = "String")]
 pub struct ListCals;
 
-/// Send message to specific calendar
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct ClientMessage {
-    /// Id of the client session
-    pub id: usize,
-    /// Peer message
-    pub msg: String,
-    /// calendar name
-    pub cal: String,
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ClientMessage {
+    ListCals,
+    CreateCal(CreateCal),
+    AddEvent(AddEvent),
+    GetEvent(GetEvent),
+    GetEventsInRange(GetEventsInRange),
+    DeleteEvent(DeleteEvent),
+    Join(Join),
 }
 
 /// Struct representing the Websocket server
@@ -166,11 +206,92 @@ impl Handler<Join> for CalServer {
 
         let (id, cal_name) = (msg.id, msg.name);
 
+        // remove the user from the other calendars
+        self._cals.iter_mut().for_each(|c| {
+            c.1 .1.remove(&id);
+        });
+
         if let Some((_, sessions)) = self._cals.get_mut(&cal_name) {
             sessions.insert(id);
             Ok(format!("Successfully joined calendar: {}", &cal_name))
         } else {
             Err(ServerError::CalendarNotFound)
+        }
+    }
+}
+
+impl Handler<AddEvent> for CalServer {
+    type Result = Result<EventID, ServerError>;
+
+    fn handle(&mut self, msg: AddEvent, ctx: &mut Self::Context) -> Self::Result {
+        let (cal, sessions) = match self._cals.get_mut(&msg.cal_name) {
+            Some(inner) => inner,
+            None => return Err(ServerError::CalendarNotFound),
+        };
+
+        let event = Event::new(msg.e_name, msg.start, msg.end);
+        let uid = event.uid();
+
+        cal.add_event(event);
+
+        Ok(uid)
+    }
+}
+
+impl Handler<DeleteEvent> for CalServer {
+    type Result = Result<(), ServerError>;
+
+    fn handle(&mut self, msg: DeleteEvent, ctx: &mut Self::Context) -> Self::Result {
+        let (cal, _) = match self._cals.get_mut(&msg.cal_name) {
+            Some(inner) => inner,
+            None => return Err(ServerError::CalendarNotFound),
+        };
+
+        match cal.remove(msg.eid) {
+            Some(_) => Ok(()),
+            None => Err(ServerError::EventNotFound),
+        }
+    }
+}
+
+impl Handler<GetEvent> for CalServer {
+    type Result = Result<String, ServerError>;
+
+    fn handle(&mut self, msg: GetEvent, ctx: &mut Self::Context) -> Self::Result {
+        let (cal, _) = match self._cals.get_mut(&msg.cal_name) {
+            Some(inner) => inner,
+            None => return Err(ServerError::CalendarNotFound),
+        };
+
+        match cal.get(msg.eid) {
+            Some(e) => match serde_json::to_string(e) {
+                Ok(s) => Ok(s),
+                Err(_) => Err(ServerError::EventFailedToSerialize),
+            },
+            None => Err(ServerError::EventNotFound),
+        }
+    }
+}
+
+impl Handler<GetEventsInRange> for CalServer {
+    type Result = Result<String, ServerError>;
+
+    fn handle(&mut self, msg: GetEventsInRange, ctx: &mut Self::Context) -> Self::Result {
+        let (cal, _) = match self._cals.get_mut(&msg.cal_name) {
+            Some(inner) => inner,
+            None => return Err(ServerError::CalendarNotFound),
+        };
+
+        let (ok, err): (Vec<_>, Vec<_>) = cal
+            .range(msg.range)
+            .map(|e| serde_json::to_string(e))
+            .partition(Result::is_ok);
+
+        if !err.is_empty() {
+            Err(ServerError::EventFailedToSerialize)
+        } else {
+            serde_json::to_string(&ok.into_iter().map(Result::unwrap).collect::<Vec<String>>())
+                .or(Err(ServerError::EventFailedToSerialize))
         }
     }
 }
@@ -227,6 +348,7 @@ mod tests {
 
     use super::*;
     use anyhow;
+    use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 
     #[actix_rt::test]
     async fn server_create_cal_test() -> anyhow::Result<()> {
@@ -268,6 +390,52 @@ mod tests {
             test2.err().unwrap(),
             super::ServerError::CalendarCreationFailed
         );
+
+        Ok(())
+    }
+
+    #[actix_rt::test]
+    async fn server_add_event_test() -> anyhow::Result<()> {
+        // Test to ensure that trying to create an invalid calendar fails
+        let client_id = 0;
+        let svr = CalServer::new().start();
+
+        // try to make a new calendar with no name
+        svr.send(super::CreateCal {
+            id: client_id,
+            name: "main".to_string(),
+        })
+        .await?;
+
+        let event_st = DateTime::from_utc(
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2023, 6, 19).unwrap(),
+                NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
+            ),
+            Utc,
+        );
+
+        let event_end = DateTime::from_utc(
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2023, 6, 19).unwrap(),
+                NaiveTime::from_hms_opt(23, 59, 59).unwrap(),
+            ),
+            Utc,
+        );
+
+        let test = svr
+            .send(super::AddEvent {
+                e_name: "Michael's Birthday".to_string(),
+                cal_name: "main".to_string(),
+
+                start: event_st,
+                end: event_end,
+
+                id: client_id,
+            })
+            .await?;
+
+        assert!(test.is_ok());
 
         Ok(())
     }

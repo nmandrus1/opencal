@@ -1,5 +1,4 @@
 use chrono::{DateTime, Utc};
-use icalendar::{Component, Event};
 use std::{
     collections::{BTreeSet, HashMap},
     ops::RangeBounds,
@@ -7,8 +6,7 @@ use std::{
 
 use slotmap::{DefaultKey, Key, KeyData, SlotMap};
 
-#[derive(PartialEq, Eq, Hash)]
-pub struct EventID(usize);
+use super::event::{Event, EventID, EventRange};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Default, Hash)]
 struct CalKey {
@@ -44,25 +42,6 @@ unsafe impl Key for CalKey {
 }
 
 #[derive(Debug)]
-pub struct EventRange {
-    start: DateTime<Utc>,
-    end: DateTime<Utc>,
-}
-
-impl EventRange {
-    /// Construct a new range from start to end, if either parameters
-    /// are Option::None then the corresponding time will be set to either
-    /// the [MAX_UTC](https://docs.rs/chrono/latest/chrono/struct.DateTime.html#associatedconstant.MAX_UTC)
-    /// or [MIN_UTC](https://docs.rs/chrono/latest/chrono/struct.DateTime.html#associatedconstant.MIN_UTC) time
-    pub fn from(start: Option<DateTime<Utc>>, end: Option<DateTime<Utc>>) -> Self {
-        Self {
-            start: start.unwrap_or(DateTime::<Utc>::MIN_UTC),
-            end: end.unwrap_or(DateTime::<Utc>::MAX_UTC),
-        }
-    }
-}
-
-#[derive(Debug)]
 struct CalKeyRange {
     start: CalKey,
     end: CalKey,
@@ -75,11 +54,11 @@ impl From<EventRange> for CalKeyRange {
         Self {
             start: CalKey {
                 inner: DefaultKey::null(),
-                start: value.start,
+                start: value.start(),
             },
             end: CalKey {
                 inner: DefaultKey::null(),
-                start: value.end,
+                start: value.end(),
             },
         }
     }
@@ -121,14 +100,16 @@ impl Calendar {
 
     /// Add an event to the calendar
     ///
-    /// If the Event is already in the Calendar, then [None](https://doc.rust-lang.org/nightly/core/option/enum.Option.hmtl) is returned
-    pub fn add_event(&mut self, eid: EventID, event: Event) -> Option<Event> {
+    /// If the Event was not in the calendar then [None](https://doc.rust-lang.org/nightly/core/option/enum.Option.hmtl) is returned
+    /// otherwise Some(Event) is returned
+    pub fn add_event(&mut self, event: Event) -> Option<Event> {
         // if the event is already in the map return None
-        if self.event_map.contains_key(&eid) {
+        if self.event_map.contains_key(&event.uid()) {
             return Some(event);
         }
 
-        let dt_utc: DateTime<Utc> = event.get_start().unwrap().into();
+        let eid = event.uid();
+        let dt_utc: DateTime<Utc> = event.start();
 
         let mut key = self.arena.insert(event);
         key.start = dt_utc;
@@ -136,6 +117,17 @@ impl Calendar {
         self.event_set.insert(key);
         self.event_map.insert(eid, key);
         None
+    }
+
+    /// Remove an event from the calendar
+    pub fn remove(&mut self, eid: EventID) -> Option<Event> {
+        let key = match self.event_map.remove(&eid) {
+            Some(k) => k,
+            None => return None,
+        };
+
+        self.event_set.remove(&key);
+        self.arena.remove(key)
     }
 
     /// Get an event to the calendar
@@ -161,7 +153,6 @@ impl Calendar {
 #[cfg(test)]
 mod tests {
     use chrono::{Days, NaiveDate, NaiveDateTime, NaiveTime};
-    use icalendar::EventLike;
 
     use super::*;
 
@@ -182,63 +173,55 @@ mod tests {
     fn test_insert() {
         let mut cal = Calendar::default();
 
-        let mut ev1 = icalendar::Event::new();
-        let event_date =
-            NaiveDateTime::parse_from_str("2023-01-01 10:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
-        let event_summary = "kulindu cooray loves javascript";
+        let event_date = DateTime::from_utc(
+            NaiveDateTime::parse_from_str("2023-01-01 10:00:00", "%Y-%m-%d %H:%M:%S").unwrap(),
+            Utc,
+        );
 
-        ev1.starts(event_date);
-        ev1.summary(event_summary);
+        let event_date_end = DateTime::from_utc(
+            NaiveDateTime::parse_from_str("2023-01-01 23:59:59", "%Y-%m-%d %H:%M:%S").unwrap(),
+            Utc,
+        );
+
+        let ev1 = Event::new("Kulindu".into(), event_date, event_date_end);
+        let ev1_id = ev1.uid();
+
+        let ev2 = Event::new("Michael".into(), event_date, event_date_end);
 
         // bc ev1 is not in cal, add_event should return None
-        assert!(cal.add_event(EventID(1), ev1).is_none());
+        assert!(cal.add_event(ev1).is_none());
 
-        // EventID(0) is not in the calendar
-        assert!(cal.get(EventID(0)).is_none());
+        // ev2 is not in the calendar
+        assert!(cal.get(ev2.uid()).is_none());
 
-        let maybe_event = cal.get(EventID(1));
+        let maybe_event = cal.get(ev1_id);
         assert!(maybe_event.is_some());
-
-        let event = maybe_event.unwrap();
-
-        assert_eq!(event.get_summary(), Some(event_summary));
     }
 
     #[test]
     fn test_range() {
         let mut cal = Calendar::default();
 
-        let mut ev1 = Event::new();
-        let jan_3_10am = NaiveDateTime::new(nth_day_2023(2), nth_hour(10));
-        ev1.starts(jan_3_10am);
-        let ev1_summary = "Kulindu is not a funny guy";
-        ev1.summary(ev1_summary);
+        let ev1 = Event::new_all_day("Kulindu BDay".to_string(), nth_day_2023(2));
+        let ev1_id = ev1.uid();
 
-        cal.add_event(EventID(1), ev1);
+        let ev2 = Event::new_all_day("Michael BDay".to_string(), nth_day_2023(1));
+        let ev2_id = ev2.uid();
 
-        let mut ev2 = Event::new();
-        let jan_2_10am = NaiveDateTime::new(nth_day_2023(1), nth_hour(10));
-        ev2.starts(jan_2_10am);
-        let ev2_summary = "What funny tshirt should I get?";
-        ev2.summary(ev2_summary);
+        let ev3 = Event::new_all_day("Niels BDay".to_string(), nth_day_2023(0));
+        let ev3_id = ev3.uid();
 
-        cal.add_event(EventID(2), ev2);
-
-        let mut ev3 = Event::new();
-        let jan_1_10am = NaiveDateTime::new(nth_day_2023(0), nth_hour(10));
-        ev3.starts(jan_1_10am);
-        let ev3_summary = "I'm running out of ideas";
-        ev3.summary(ev3_summary);
-
-        cal.add_event(EventID(3), ev3);
+        cal.add_event(ev1);
+        cal.add_event(ev2);
+        cal.add_event(ev3);
 
         let mut iter = cal.range(EventRange::from(None, None));
 
         // ev3 is should appear first bc its Jan 1 then ev2 and ev3
 
-        assert_eq!(iter.next().unwrap().get_summary(), Some(ev3_summary));
-        assert_eq!(iter.next().unwrap().get_summary(), Some(ev2_summary));
-        assert_eq!(iter.next().unwrap().get_summary(), Some(ev1_summary));
-        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next().unwrap().uid(), ev3_id);
+        assert_eq!(iter.next().unwrap().uid(), ev2_id);
+        assert_eq!(iter.next().unwrap().uid(), ev1_id);
+        assert!(iter.next().is_none());
     }
 }
