@@ -452,4 +452,191 @@ mod tests {
 
         Ok(())
     }
+
+    #[actix_rt::test]
+    async fn server_del_event_test() -> anyhow::Result<()> {
+        // Test to ensure that trying to create an invalid calendar fails
+        let client_id = 0;
+        let svr = CalServer::new().start();
+
+        // try to make a new calendar with no name
+        svr.send(super::CreateCal {
+            id: client_id,
+            name: "main".to_string(),
+        })
+        .await?;
+
+        let event_st = DateTime::from_utc(
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2023, 6, 19).unwrap(),
+                NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
+            ),
+            Utc,
+        );
+
+        let event_end = DateTime::from_utc(
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2023, 6, 19).unwrap(),
+                NaiveTime::from_hms_opt(23, 59, 59).unwrap(),
+            ),
+            Utc,
+        );
+
+        let maybe_eid = svr
+            .send(super::AddEvent {
+                e_name: "Michael's Birthday".to_string(),
+                cal_name: "main".to_string(),
+
+                start: event_st,
+                end: event_end,
+
+                id: client_id,
+            })
+            .await?;
+
+        assert!(maybe_eid.is_ok());
+
+        let eid = maybe_eid.unwrap();
+
+        let test = svr
+            .send(super::DeleteEvent {
+                eid,
+                id: client_id,
+                cal_name: "main".to_string(),
+            })
+            .await?;
+
+        assert!(test.is_ok());
+
+        Ok(())
+    }
+
+    #[actix_rt::test]
+    async fn server_get_event_test() -> anyhow::Result<()> {
+        // Test to ensure that trying to create an invalid calendar fails
+        let client_id = 0;
+        let svr = CalServer::new().start();
+
+        // try to make a new calendar with no name
+        svr.send(super::CreateCal {
+            id: client_id,
+            name: "main".to_string(),
+        })
+        .await?;
+
+        let event_st = DateTime::from_utc(
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2023, 6, 19).unwrap(),
+                NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
+            ),
+            Utc,
+        );
+
+        let event_end = DateTime::from_utc(
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2023, 6, 19).unwrap(),
+                NaiveTime::from_hms_opt(23, 59, 59).unwrap(),
+            ),
+            Utc,
+        );
+
+        let maybe_eid = svr
+            .send(super::AddEvent {
+                e_name: "Michael's Birthday".to_string(),
+                cal_name: "main".to_string(),
+
+                start: event_st,
+                end: event_end,
+
+                id: client_id,
+            })
+            .await?;
+        assert!(maybe_eid.is_ok());
+
+        let eid = maybe_eid.unwrap();
+
+        let test = svr
+            .send(super::GetEvent {
+                eid,
+                cal_name: "main".to_string(),
+            })
+            .await?;
+
+        assert!(test.is_ok());
+
+        let event = test.unwrap();
+        let event_json = format!("{{\"uid\":{},\"start\":\"2023-06-19T00:00:00Z\",\"end\":\"2023-06-19T23:59:59Z\",\"name\":\"Michael's Birthday\",\"description\":null}}", eid);
+        assert_eq!(event, event_json);
+
+        Ok(())
+    }
+
+    #[actix_rt::test]
+    async fn server_get_del_event_test() -> anyhow::Result<()> {
+        // Test to ensure that trying to create an invalid calendar fails
+        let client_id = 0;
+        let svr = CalServer::new().start();
+
+        // try to make a new calendar with no name
+        svr.send(super::CreateCal {
+            id: client_id,
+            name: "main".to_string(),
+        })
+        .await?;
+
+        let event_st = DateTime::from_utc(
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2023, 6, 19).unwrap(),
+                NaiveTime::from_hms_opt(0, 0, 0).unwrap(),
+            ),
+            Utc,
+        );
+
+        let event_end = DateTime::from_utc(
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(2023, 6, 19).unwrap(),
+                NaiveTime::from_hms_opt(23, 59, 59).unwrap(),
+            ),
+            Utc,
+        );
+
+        let maybe_eid = svr
+            .send(super::AddEvent {
+                e_name: "Michael's Birthday".to_string(),
+                cal_name: "main".to_string(),
+
+                start: event_st,
+                end: event_end,
+
+                id: client_id,
+            })
+            .await?;
+        assert!(maybe_eid.is_ok());
+
+        let eid = maybe_eid.unwrap();
+
+        let deleted_event = svr
+            .send(super::DeleteEvent {
+                eid,
+                id: client_id,
+                cal_name: "main".to_string(),
+            })
+            .await?;
+
+        assert!(deleted_event.is_ok());
+
+        let test = svr
+            .send(super::GetEvent {
+                eid,
+                cal_name: "main".to_string(),
+            })
+            .await?;
+
+        assert!(test.is_err());
+
+        let event = test.unwrap_err();
+        assert_eq!(event, ServerError::EventNotFound);
+
+        Ok(())
+    }
 }
