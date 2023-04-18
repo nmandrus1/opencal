@@ -5,6 +5,12 @@ use uuid::Uuid;
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub struct EventID(u128);
 
+impl std::fmt::Display for EventID {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EventRange {
     start: DateTime<Utc>,

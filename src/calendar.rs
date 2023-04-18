@@ -4,7 +4,6 @@ use std::{
     ops::RangeBounds,
 };
 
-use tracing_futures::Instrument;
 use uuid::Uuid;
 
 use slotmap::{DefaultKey, Key, KeyData, SlotMap};
@@ -115,11 +114,11 @@ impl Calendar {
         let add_span = tracing::info_span!(
             "Request_ID: {} - Add request for EventID: {}",
             %requestid,
-            eid = eid.0
+            %eid
         );
 
         let _add_span_guard = add_span.enter();
-        let query_span = tracing::info!("Added EventID: {}", eid.0);
+        tracing::info!("Added EventID: {}", eid);
 
         let dt_utc: DateTime<Utc> = event.start();
 
@@ -150,7 +149,7 @@ impl Calendar {
         tracing::info!(
             "Request_ID: {} - Received get reqeust for EventID: {}",
             requestid,
-            eid.0
+            eid
         );
 
         // first attempts to get the CalKey from the event map, if successful
@@ -167,8 +166,8 @@ impl Calendar {
         tracing::info!(
             "Request_ID {} - Received range request in range: {} -> {}",
             requestid,
-            range.start,
-            range.end
+            range.start(),
+            range.end()
         );
 
         // We create two "CalKeys" that we will use to get a range
