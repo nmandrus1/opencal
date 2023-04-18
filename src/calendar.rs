@@ -1,9 +1,11 @@
+use actix_web::middleware::Logger;
 use chrono::{DateTime, Utc};
 use icalendar::{Component, Event};
 use std::{
     collections::{BTreeSet, HashMap},
     ops::RangeBounds,
 };
+use uuid::Uuid;
 
 use slotmap::{DefaultKey, Key, KeyData, SlotMap};
 
@@ -123,10 +125,19 @@ impl Calendar {
     ///
     /// If the Event is already in the Calendar, then [None](https://doc.rust-lang.org/nightly/core/option/enum.Option.hmtl) is returned
     pub fn add_event(&mut self, eid: EventID, event: Event) -> Option<Event> {
+        let requestid = Uuid::new_v4();
+
+        tracing::info!(
+            "Request_ID: {} - Add request for EventID: {}",
+            requestid,
+            eid.0
+        );
+
         // if the event is already in the map return None
         if self.event_map.contains_key(&eid) {
             return Some(event);
         }
+        tracing::info!("Request_ID: {} - Added EventID: {}", requestid, eid.0);
 
         let dt_utc: DateTime<Utc> = event.get_start().unwrap().into();
 
@@ -135,11 +146,20 @@ impl Calendar {
 
         self.event_set.insert(key);
         self.event_map.insert(eid, key);
+
         None
     }
 
     /// Get an event to the calendar
     pub fn get(&self, eid: EventID) -> Option<&Event> {
+        let requestid = Uuid::new_v4();
+
+        tracing::info!(
+            "Request_ID: {} - Received get reqeust for EventID: {}",
+            requestid,
+            eid.0
+        );
+
         // first attempts to get the CalKey from the event map, if successful
         // it retreives a reference to the event from the slotmap
         self.event_map
@@ -149,6 +169,15 @@ impl Calendar {
 
     /// Get all events that fall within the time range
     pub fn range(&self, range: EventRange) -> impl Iterator<Item = &Event> {
+        let requestid = Uuid::new_v4();
+
+        tracing::info!(
+            "Request_ID {} - Received range request in range: {} -> {}",
+            requestid,
+            range.start,
+            range.end
+        );
+
         // We create two "CalKeys" that we will use to get a range
         // from the HashSet and then map the CalKeys to &Events
         self.event_set

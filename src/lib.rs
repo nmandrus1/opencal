@@ -4,6 +4,7 @@ use actix_web::{dev::Server, web, App, Error, HttpRequest, HttpResponse, HttpSer
 use actix_web_actors::ws;
 use std::io::Write;
 use std::{net::TcpListener, time::Instant};
+use uuid::Uuid;
 
 mod calendar;
 mod event;
@@ -12,18 +13,23 @@ mod session;
 
 // basic health check end_point
 async fn health_check() -> impl Responder {
-    log::info!("Request made to the health_check endroute");
+    let requestid = Uuid::new_v4();
+    tracing::info!(
+        "Request_id: {} made to the health_check endroute",
+        requestid
+    );
     HttpResponse::Ok().finish()
 }
 
-// entry point to the webscoket connection
+// entry point to the websocket connection
 async fn ws_route(
     req: HttpRequest,
     stream: web::Payload,
     srv: web::Data<Addr<server::CalServer>>,
 ) -> Result<HttpResponse, Error> {
     // start the web socket server here
-    log::info!("Request made to the websocket endroute");
+    let requestid = Uuid::new_v4();
+    tracing::info!("Request_id: {} made to the websocket endroute", requestid);
 
     ws::start(
         session::WsCalSession {
@@ -38,6 +44,9 @@ async fn ws_route(
 
 // return an instance of our server
 pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
+    let requestid = Uuid::new_v4();
+    tracing::info!("Request_id: {} - New server created", requestid);
+
     // start calendar server
     let server = server::CalServer::new().start();
 
