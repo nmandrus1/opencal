@@ -4,6 +4,9 @@ use std::{
     ops::RangeBounds,
 };
 
+use tracing_futures::Instrument;
+use uuid::Uuid;
+
 use slotmap::{DefaultKey, Key, KeyData, SlotMap};
 
 use super::event::{Event, EventID, EventRange};
@@ -98,8 +101,6 @@ impl Calendar {
         slf
     }
 
-    /// Add an event to the calendar
-    ///
     /// If the Event was not in the calendar then [None](https://doc.rust-lang.org/nightly/core/option/enum.Option.hmtl) is returned
     /// otherwise Some(Event) is returned
     pub fn add_event(&mut self, event: Event) -> Option<Event> {
@@ -109,6 +110,17 @@ impl Calendar {
         }
 
         let eid = event.uid();
+
+        let requestid = Uuid::new_v4();
+        let add_span = tracing::info_span!(
+            "Request_ID: {} - Add request for EventID: {}",
+            %requestid,
+            eid = eid.0
+        );
+
+        let _add_span_guard = add_span.enter();
+        let query_span = tracing::info!("Added EventID: {}", eid.0);
+
         let dt_utc: DateTime<Utc> = event.start();
 
         let mut key = self.arena.insert(event);
@@ -116,6 +128,7 @@ impl Calendar {
 
         self.event_set.insert(key);
         self.event_map.insert(eid, key);
+
         None
     }
 
@@ -132,6 +145,14 @@ impl Calendar {
 
     /// Get an event to the calendar
     pub fn get(&self, eid: EventID) -> Option<&Event> {
+        let requestid = Uuid::new_v4();
+
+        tracing::info!(
+            "Request_ID: {} - Received get reqeust for EventID: {}",
+            requestid,
+            eid.0
+        );
+
         // first attempts to get the CalKey from the event map, if successful
         // it retreives a reference to the event from the slotmap
         self.event_map
@@ -141,6 +162,15 @@ impl Calendar {
 
     /// Get all events that fall within the time range
     pub fn range(&self, range: EventRange) -> impl Iterator<Item = &Event> {
+        let requestid = Uuid::new_v4();
+
+        tracing::info!(
+            "Request_ID {} - Received range request in range: {} -> {}",
+            requestid,
+            range.start,
+            range.end
+        );
+
         // We create two "CalKeys" that we will use to get a range
         // from the HashSet and then map the CalKeys to &Events
         self.event_set

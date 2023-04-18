@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use rand::{self, rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use uuid::Uuid;
 
 use std::collections::{HashMap, HashSet};
 
@@ -154,6 +155,9 @@ impl CalServer {
 impl CalServer {
     /// Send message to all users in the calendar
     fn _send_message(&self, cal: &str, message: &str, skip_id: usize) {
+        let requestid = Uuid::new_v4();
+        tracing::info!("Request_id: {} - Message sent to {}", requestid, cal);
+
         if let Some((_, sessions)) = self._cals.get(cal) {
             for id in sessions {
                 if *id != skip_id {
@@ -178,6 +182,9 @@ impl Handler<Connect> for CalServer {
     type Result = usize;
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
+        let requestid = Uuid::new_v4();
+        tracing::info!("Request_id: {} - Connect message received", requestid);
+
         // assign an id to the session and store it in the hashmap
         let id = self.rng.gen();
         self.sessions.insert(id, msg.addr);
@@ -192,6 +199,9 @@ impl Handler<Disconnect> for CalServer {
     type Result = ();
 
     fn handle(&mut self, msg: Disconnect, _ctx: &mut Self::Context) -> Self::Result {
+        let requestid = Uuid::new_v4();
+        tracing::info!("Request_id: {} - Disconnect message received", requestid);
+
         println!("Session {} has disconnected", msg.id);
 
         self.sessions.remove(&msg.id);
@@ -202,6 +212,9 @@ impl Handler<Join> for CalServer {
     type Result = Result<String, ServerError>;
 
     fn handle(&mut self, msg: Join, _ctx: &mut Self::Context) -> Self::Result {
+        let requestid = Uuid::new_v4();
+        tracing::info!("Request_id: {} - Join message received", requestid);
+
         // Attempt to connect user to calendar
 
         let (id, cal_name) = (msg.id, msg.name);
@@ -302,11 +315,11 @@ impl Handler<CreateCal> for CalServer {
     fn handle(&mut self, msg: CreateCal, ctx: &mut Self::Context) -> Self::Result {
         let (id, new_cal_name) = (msg.id, msg.name);
 
-        log::info!("User {id} is attempting to create a new calendar: \"{new_cal_name}\"");
+        tracing::info!("User {id} is attempting to create a new calendar: \"{new_cal_name}\"");
 
         // if the calendar name is empty then return an error
         if new_cal_name.is_empty() {
-            log::error!("Calendar creation failed: Invalid Name");
+            tracing::error!("Calendar creation failed: Invalid Name");
             return Err(ServerError::CalendarCreationFailed);
         }
 
