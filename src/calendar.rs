@@ -5,6 +5,7 @@ use std::{
     collections::{BTreeSet, HashMap},
     ops::RangeBounds,
 };
+use tracing_futures::Instrument;
 use uuid::Uuid;
 
 use slotmap::{DefaultKey, Key, KeyData, SlotMap};
@@ -124,20 +125,22 @@ impl Calendar {
     /// Add an event to the calendar
     ///
     /// If the Event is already in the Calendar, then [None](https://doc.rust-lang.org/nightly/core/option/enum.Option.hmtl) is returned
-    pub fn add_event(&mut self, eid: EventID, event: Event) -> Option<Event> {
+    pub async fn add_event(&mut self, eid: EventID, event: Event) -> Option<Event> {
         let requestid = Uuid::new_v4();
 
-        tracing::info!(
+        let add_span = tracing::info_span!(
             "Request_ID: {} - Add request for EventID: {}",
-            requestid,
-            eid.0
+            %requestid,
+            eid = eid.0
         );
+        let _add_span_guard = add_span.enter();
 
         // if the event is already in the map return None
         if self.event_map.contains_key(&eid) {
             return Some(event);
         }
-        tracing::info!("Request_ID: {} - Added EventID: {}", requestid, eid.0);
+
+        let query_span = tracing::info!("Added EventID: {}", eid.0);
 
         let dt_utc: DateTime<Utc> = event.get_start().unwrap().into();
 
