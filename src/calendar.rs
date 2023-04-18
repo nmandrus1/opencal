@@ -95,9 +95,11 @@ pub struct Calendar {
 
 impl Calendar {
     pub fn new(name: String) -> Self {
-        let mut slf = Self::default();
-        slf.name = name;
-        slf
+        // wow literally the only time I've ever used this syntax
+        Self {
+            name,
+            ..Default::default()
+        }
     }
 
     /// If the Event was not in the calendar then [None](https://doc.rust-lang.org/nightly/core/option/enum.Option.hmtl) is returned

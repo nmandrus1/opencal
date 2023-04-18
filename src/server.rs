@@ -297,7 +297,7 @@ impl Handler<GetEventsInRange> for CalServer {
 
         let (ok, err): (Vec<_>, Vec<_>) = cal
             .range(msg.range)
-            .map(|e| serde_json::to_string(e))
+            .map(serde_json::to_string)
             .partition(Result::is_ok);
 
         if !err.is_empty() {
@@ -341,7 +341,7 @@ impl Handler<ListCals> for CalServer {
 
     fn handle(&mut self, msg: ListCals, ctx: &mut Self::Context) -> Self::Result {
         if self._cals.is_empty() {
-            String::from("No Calendars");
+            return String::from("No Calendars");
         }
 
         self._cals.keys().fold(String::new(), |mut acc, str| {

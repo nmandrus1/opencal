@@ -248,7 +248,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsCalSession {
                     Err(e) => {
                         ctx.text(format!(
                             "The message recieved was not understood by the server: {} ",
-                            e.to_string()
+                            e
                         ));
                         return;
                     }
