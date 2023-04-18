@@ -57,15 +57,15 @@ pub struct Disconnect {
 #[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Result<EventID, ServerError>")]
 pub struct AddEvent {
-    cal_name: String,
+    pub cal_name: String,
 
-    e_name: String,
+    pub e_name: String,
 
-    start: DateTime<Utc>,
-    end: DateTime<Utc>,
+    pub start: DateTime<Utc>,
+    pub end: DateTime<Utc>,
 
     // client id
-    id: usize,
+    pub id: usize,
 }
 
 /// Send delete request of event to calendar session:
@@ -75,26 +75,26 @@ pub struct AddEvent {
 #[rtype(result = "Result<(), ServerError>")]
 pub struct DeleteEvent {
     // client id
-    id: usize,
+    pub id: usize,
 
-    cal_name: String,
+    pub cal_name: String,
 
     // eventID
-    eid: EventID,
+    pub eid: EventID,
 }
 
 #[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Result<String, ServerError>")]
 pub struct GetEvent {
-    cal_name: String,
-    eid: EventID,
+    pub cal_name: String,
+    pub eid: EventID,
 }
 
 #[derive(Debug, Message, Serialize, Deserialize)]
 #[rtype(result = "Result<String, ServerError>")]
 pub struct GetEventsInRange {
-    cal_name: String,
-    range: EventRange,
+    pub cal_name: String,
+    pub range: EventRange,
 }
 
 /// Create a calendar

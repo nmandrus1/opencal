@@ -61,6 +61,8 @@ impl WsCalSession {
     }
 
     fn create_cal(&mut self, msg: server::CreateCal, ctx: &mut ws::WebsocketContext<Self>) {
+        let msg = server::CreateCal { id: self.id, ..msg };
+
         self.addr
             .send(msg)
             .into_actor(self)
@@ -79,6 +81,7 @@ impl WsCalSession {
     }
 
     fn join_cal(&mut self, msg: server::Join, ctx: &mut ws::WebsocketContext<Self>) {
+        let msg = server::Join { id: self.id, ..msg };
         self.addr
             .send(msg)
             .into_actor(self)
@@ -97,6 +100,7 @@ impl WsCalSession {
     }
 
     fn add_event(&mut self, msg: server::AddEvent, ctx: &mut ws::WebsocketContext<Self>) {
+        let msg = server::AddEvent { id: self.id, ..msg };
         self.addr
             .send(msg)
             .into_actor(self)
@@ -115,6 +119,7 @@ impl WsCalSession {
     }
 
     fn del_event(&mut self, msg: server::DeleteEvent, ctx: &mut ws::WebsocketContext<Self>) {
+        let msg = server::DeleteEvent { id: self.id, ..msg };
         self.addr
             .send(msg)
             .into_actor(self)
