@@ -34,7 +34,9 @@ const calendar = () => {
     currentDate.innerText = `${months[currMonth]} ${currYear}`; 
     daysTag.innerHTML = liTag;
 }
+
 renderCalendar();
+
 
 prevNextIcon.forEach(icon => { 
     icon.addEventListener("click", () => { 
@@ -49,4 +51,17 @@ prevNextIcon.forEach(icon => {
         }
         calendar(); 
     });
+});
+
+document.addEventListener("keydown", e => {
+    if(e.key === "ArrowLeft"){
+        month = month - 1;
+        calendar();
+       renderCalendar();
+
+    } else if(e.key === "ArrowRight"){
+        month = month + 1;
+        calendar();
+       renderCalendar();
+    }
 });
