@@ -1,6 +1,12 @@
 # OpenCal
 
-OpenCal is a Server for a Collaborative Calendar
+OpenCal is a project that aims to provide collaborative calendars for individuals, teams, and organizations. With OpenCal, users can easily create, share, and manage calendars with colleagues, friends, and family members.
+
+The platform promises to simplify the process of scheduling meetings, appointments, and events by allowing users to view each other's schedules and availability in real-time. It also features a range of tools that enable users to customize their calendars, set reminders, and receive notifications.
+
+OpenCal is designed to be user-friendly, intuitive, and accessible from any device, including smartphones, tablets, and desktop computers. The platform ensures fast and secure data transfer, and there are future plans to integrates with popular productivity apps such as Google Calendar.
+
+Overall, OpenCal is an innovative solution for individuals and organizations looking to streamline their scheduling processes and improve collaboration. With its collaborative calendars, users can save time, increase productivity, and achieve better results.
 
 # Table of Contents
 
