@@ -1,4 +1,5 @@
 use actix_web::middleware::Logger;
+use unicode_segmentation::UnicodeSegmentation;
 use chrono::{DateTime, Utc};
 use icalendar::{Component, Event};
 use std::{
@@ -233,6 +234,40 @@ impl DatabaseSettings {
     }
 }
 
+//! src/domain.rs
+pub struct SubscriberName(String);
+impl SubscriberName {
+    /// Returns an instance of `SubscriberName` if the input satisfies all
+    pub fn parse(s: String) -> SubscriberName {
+        let empty = s.trim().is_empty();
+        let too_long = s.graphemes(true).count() > 256;
+        let null_chars = ['/', '(', ')', '"', '<', '>', '\\', '{', '}'];
+        let ifNullChars = s.chars().any(|g| null_chars.contains(&g));
+        if empty || too_long || ifNullChars {
+            panic!(format!("{} is not a valid subscriber name.", s))
+        } else {
+            Self(s)
+        }
+    }
+}
+
+#[tracing::instrument([...])]
+pub async fn insert_subscriber(pool: &PgPool, new_subscriber: &NewSubscriber,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+        r#" INSERT INTO subs (id, email, name, subbed)
+        VALUES ($1, $2, $3, $4)
+        "#,
+        Uuid::new_v4(),newsub.email, newsub.name.as_ref(),
+            Utc::now())
+            .execute(pool)
+            .await
+            .map_err(|e| {
+            tracing::error!("Failed to execute query: {:?}", e);
+            e
+        })?;
+        Ok(())
+}
 #[cfg(test)]
 mod tests {
     use chrono::{Days, NaiveDate, NaiveDateTime, NaiveTime};
