@@ -190,6 +190,49 @@ impl Calendar {
     }
 }
 
+// Add "secret" structures for args not known a priori or too sensitive to be stored, like
+// passwords
+pub fn get_configuration() -> Result<Settings, config::ConfigError> {
+    let mut set = config::Config::default();
+    let path = std::env::current_dir().expect("Failed to determine the current directory");
+    let config_dir = path.join("configuration");
+    set.merge(config::File::from(config_dir.join("base")).required(true))?;
+    let env: Environment = std::env::var("APP_ENVIRONMENT")
+        .unwrap_or_else(|_| "local".into())
+        .try_into()
+        .expect("Failed to parse APP_ENVIRONMENT.");
+    set.merge(config::File::from(config_dir.join(env.as_str())).required(true))?;
+    // Add in settings from environment variables (with a prefix of APP and '__' as separator)
+    set.merge(config::Environment::with_prefix("app").separator("__"))?;
+    set.try_into()
+}
+
+// Add Database Structures for future account creation
+// uses Username Password format
+#[derive(serde::Deserialize)]
+pub struct DatabaseSettings {
+    pub user: String,
+    pub pass: String,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub host: String,
+    pub port: u16,
+    pub database: String,
+}
+impl DatabaseSettings {
+    pub fn connection_string(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}/{}",
+            self.user, self.pass, self.host, self.port, self.database
+        )
+    }
+    pub fn connection_string_without_db(&self) -> String {
+        format!(
+            "postgres://{}:{}@{}:{}",
+            self.user, self.pass, self.host, self.port
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::{Days, NaiveDate, NaiveDateTime, NaiveTime};
