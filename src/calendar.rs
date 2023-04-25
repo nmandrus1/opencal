@@ -352,3 +352,23 @@ mod tests {
         assert_eq!(iter.next(), None);
     }
 }
+#[cfg(test)]
+mod tests {
+use super::SubscriberEmail;
+use claim::assert_err;
+#[test]
+fn empty_string() {
+    let email = "".to_string();
+    assert_err!(SubscriberEmail::parse(email));
+}
+#[test]
+fn email_missing_at() {
+    let email = "testdomain.com".to_string();
+    assert_err!(SubscriberEmail::parse(email));
+}
+#[test]
+fn email_missing_user() {
+    let email = "@domain.com".to_string();
+    assert_err!(SubscriberEmail::parse(email));
+}
+}
