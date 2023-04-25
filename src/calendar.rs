@@ -66,6 +66,7 @@ impl EventRange {
     }
 }
 
+
 #[derive(Debug)]
 struct CalKeyRange {
     start: CalKey,
@@ -354,21 +355,41 @@ mod tests {
 }
 #[cfg(test)]
 mod tests {
-use super::SubscriberEmail;
-use claim::assert_err;
-#[test]
-fn empty_string() {
-    let email = "".to_string();
-    assert_err!(SubscriberEmail::parse(email));
+    use super::SubscriberEmail;
+    use claim::assert_err;
+    #[test]
+    fn empty_string() {
+        let email = "".to_string();
+        assert_err!(SubscriberEmail::parse(email));
+    }
+    #[test]
+    fn email_missing_at() {
+        let email = "testdomain.com".to_string();
+        assert_err!(SubscriberEmail::parse(email));
+    }
+    #[test]
+    fn email_missing_user() {
+        let email = "@domain.com".to_string();
+        assert_err!(SubscriberEmail::parse(email));
+    }
 }
-#[test]
-fn email_missing_at() {
-    let email = "testdomain.com".to_string();
-    assert_err!(SubscriberEmail::parse(email));
-}
-#[test]
-fn email_missing_user() {
-    let email = "@domain.com".to_string();
-    assert_err!(SubscriberEmail::parse(email));
-}
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let config = get_configuration().expect("Failed to read configuration.");
+    let connect = PgPoolOptions::new()
+        .connect_timeout(std::time::Duration::from_secs(2))
+        .connect_lazy_with(configuration.database.with_db());
+    let sender_email = configuration.email_client.sender()
+        .expect("Invalid sender email address.");
+    let client = EmailClient::new(
+        configuration.email_client.base_url,
+        sender_email
+    );
+    let address = format!(
+        "{}:{}",
+        configuration.application.host, configuration.application.port
+    );
+    let listen = TcpListener::bind(address)?;
+    run(listener, connection_pool, email_client)?.await?;
+    Ok(())
 }
