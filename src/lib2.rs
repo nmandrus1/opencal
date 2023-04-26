@@ -232,7 +232,115 @@ impl Server {
                 advanced_opts,
             }),
         });
+          #[cfg(feature = "http2")]
+        if general.http2 {
 
+            tcp_listener
+                .set_nonblocking(true)
+                .with_context(|| "failed to set TCP non-blocking mode")?;
+            let listener = tokio::net::TcpListener::from_std(tcp_listener)
+                .with_context(|| "failed to create tokio::net::TcpListener")?;
+            let mut incoming = AddrIncoming::from_listener(listener).with_context(|| {
+                "failed to create an AddrIncoming from the current tokio::net::TcpListener"
+            })?;
+            incoming.set_nodelay(true);
+
+            let http2_tls_cert = match general.http2_tls_cert {
+                Some(v) => v,
+                _ => bail!("failed to initialize TLS because cert file missing"),
+            };
+            let http2_tls_key = match general.http2_tls_key {
+                Some(v) => v,
+                _ => bail!("failed to initialize TLS because key file missing"),
+            };
+
+            let tls = TlsConfigBuilder::new()
+                .cert_path(&http2_tls_cert)
+                .key_path(&http2_tls_key)
+                .build()
+                .with_context(|| {
+                    "failed to initialize TLS probably because invalid cert or key file"
+                })?;
+
+            #[cfg(unix)]
+            let signals = signals::create_signals()
+                .with_context(|| "failed to register termination signals")?;
+            #[cfg(unix)]
+            let handle = signals.handle();
+
+            let server =
+                HyperServer::builder(TlsAcceptor::new(tls, incoming)).serve(router_service);
+
+            #[cfg(unix)]
+            let server =
+                server.with_graceful_shutdown(signals::wait_for_signals(signals, grace_period));
+            #[cfg(windows)]
+            let server = server.with_graceful_shutdown(signals::wait_for_ctrl_c(
+                _cancel_recv,
+                _cancel_fn,
+                grace_period,
+            ));
+
+            tracing::info!(
+                parent: tracing::info_span!("Server::start_server", ?addr_str, ?threads),
+                "listening on https://{}",
+                addr_str
+            );
+
+            tracing::info!("press ctrl+c to shut down the server");
+
+            server.await?;
+
+            #[cfg(unix)]
+            handle.close();
+
+            tracing::warn!("termination signal caught, shutting down the server execution");
+            return Ok(());
+        }
+
+     
+
+        #[cfg(unix)]
+        let signals =
+            signals::create_signals().with_context(|| "failed to register termination signals")?;
+        #[cfg(unix)]
+        let handle = signals.handle();
+
+        tcp_listener
+            .set_nonblocking(true)
+            .with_context(|| "failed to set TCP non-blocking mode")?;
+
+        let server = HyperServer::from_tcp(tcp_listener)
+            .unwrap()
+            .tcp_nodelay(true)
+            .serve(router_service);
+
+        #[cfg(unix)]
+        let server =
+            server.with_graceful_shutdown(signals::wait_for_signals(signals, grace_period));
+        #[cfg(windows)]
+        let server = server.with_graceful_shutdown(signals::wait_for_ctrl_c(
+            _cancel_recv,
+            _cancel_fn,
+            grace_period,
+        ));
+
+        tracing::info!(
+            parent: tracing::info_span!("Server::start_server", ?addr_str, ?threads),
+            "listening on http://{}",
+            addr_str
+        );
+
+        tracing::info!("press ctrl+c to shut down the server");
+
+        server.await?;
+
+        #[cfg(unix)]
+        handle.close();
+
+        tracing::warn!("termination signal caught, shutting down the server execution");
+        Ok(())
+    }
   
       
 }
