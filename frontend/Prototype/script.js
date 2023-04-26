@@ -47,8 +47,48 @@ document.getElementById("thead-month").innerHTML = $dataHead;
 
 monthAndYear = document.getElementById("monthAndYear");
 showCalendar(currentMonth, currentYear);
+/* load years function 
+function loadYears()
+    {
+        // whichever date range makes the most sense
+        var startYear = 1900;
+        var endYear = 2022;
 
+        for(var i = startYear; i <= endYear; i++)
+        {
+            var doc = document.createElement("div");
+            doc.innerHTML = i;
+            doc.classList.add("dropdown-item");
 
+            doc.onclick = (function(){
+                var selectedYear = i;
+                return function(){
+                    year = selectedYear;
+                    document.getElementById("curYear").innerHTML = year;
+                    loadCalendarDays();
+                    return year;
+                }
+            })();
+
+            document.getElementById("years").appendChild(doc);
+        }
+    }
+    
+    calculating days in the month, doesnt completely work
+    function daysInMonth(month, year) 
+    {
+        let d = new Date(year, month+1, 0);
+        return d.getDate();
+    }
+
+    function loadCalendarDays()
+    {
+        document.getElementById("calendarDays").innerHTML = "";
+
+        var tmpDate = new Date(year, month, 0);
+        var num = daysInMonth(month, year);
+        var dayofweek = tmpDate.getDay();  
+  */
 
 function next() {
     currentYear = (currentMonth === 11) ? currentYear + 1 : currentYear;
